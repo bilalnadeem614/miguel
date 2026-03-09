@@ -46,12 +46,6 @@ from miguel.agent.tools.web_tools import (
     web_news,
     web_search_detailed,
 )
-from miguel.agent.tools.memory_tools import (
-    remember,
-    recall,
-    forget,
-    list_memories,
-)
 
 
 def create_agent(interactive: bool = False) -> Agent:
@@ -96,11 +90,7 @@ def create_agent(interactive: bool = False) -> Agent:
             web_search,
             web_news,
             web_search_detailed,
-                    remember,
-            recall,
-            forget,
-            list_memories,
-],
+        ],
         markdown=True,
         **(
             {

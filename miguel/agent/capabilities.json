@@ -116,10 +116,10 @@
       "title": "Persistent memory across sessions",
       "description": "Implement a memory system that persists across conversations. Should store: key facts learned, user preferences, project context, and past interaction summaries. Could use a local JSON/SQLite store or Agno's built-in memory features. Without this, every conversation starts from zero.",
       "priority": 2,
-      "status": "unchecked",
+      "status": "checked",
       "category": "self-generated",
       "added_at": "2026-03-09T12:41:56.724804+00:00",
-      "completed_at": null
+      "completed_at": "2026-03-09T17:02:05.113210+00:00"
     },
     {
       "id": "cap-013",

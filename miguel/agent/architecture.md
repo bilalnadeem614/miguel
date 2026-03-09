@@ -14,11 +14,13 @@ agent/
 ├── architecture.md      # This file — self-describing architecture map
 ├── capabilities.json    # Checklist of capabilities (checked/unchecked)
 ├── improvements.md      # Log of all self-improvements made
+├── memory.db            # SQLite database for persistent memory across sessions
 └── tools/
     ├── __init__.py          # Empty — makes tools/ a Python package
     ├── error_utils.py       # Error handling foundation — decorators, safe writes, validation
     ├── capability_tools.py  # Tools for managing the capability checklist
     ├── dep_tools.py         # Dependency management tools
+    ├── memory_tools.py      # Persistent memory — store/recall facts, preferences, context
     ├── prompt_tools.py      # Tools for safely inspecting and modifying the system prompt
     ├── recovery_tools.py    # Error recovery and diagnostic tools
     ├── self_tools.py        # Tools for self-inspection and logging improvements
@@ -32,7 +34,7 @@ agent/
 - `create_agent()` — Factory function that instantiates an `agno.agent.Agent`
 - Wires together: model, instructions, and all tools
 - External tools: `PythonTools` (run code), `ShellTools` (run commands), `LocalFileSystemTools` (read/write files)
-- Custom tools: capability management + self-inspection + prompt modification + tool creation + recovery + web search
+- Custom tools: capability management + self-inspection + prompt modification + tool creation + recovery + web search + memory
 
 ### prompts.py — The Brain
 - `get_system_prompt()` returns a list of instruction strings
@@ -100,6 +102,25 @@ agent/
   - Validates combined file syntax
   - Auto-registers new functions in core.py
 
+### tools/memory_tools.py — Persistent Memory
+- `remember(key, value, category)` — Store a fact, preference, context, or summary
+  - Categories: `fact`, `preference`, `context`, `summary`
+  - Auto-updates existing memories with the same key+category (upsert)
+  - Returns confirmation with memory ID
+- `recall(query, category, limit)` — Search memories by keyword (case-insensitive)
+  - Searches both keys and values using LIKE matching
+  - Optional category filter and result limit
+  - Returns formatted list with IDs, categories, and timestamps
+- `forget(memory_id)` — Delete a specific memory by its numeric ID
+  - Returns confirmation with what was deleted
+- `list_memories(category, limit)` — Browse all stored memories
+  - Groups results by category for readability
+  - Optional category filter
+- Data stored in `memory.db` (SQLite) — persists across conversations and restarts
+- Schema: `memories(id, key, value, category, created_at, updated_at)`
+- Uses `@safe_tool` decorator for graceful error handling
+- No external dependencies — uses Python's built-in `sqlite3`
+
 ### tools/web_tools.py — Web Search & Research
 - `web_search(query, max_results)` — General web search via DuckDuckGo
   - Returns formatted results with titles, URLs, and snippets
@@ -125,6 +146,7 @@ agent/
 5. For tool creation: write tool file → validate syntax → update core.py imports → register tools
 6. For error recovery: health_check → diagnose → recover_backup or fix manually
 7. For web search: user asks question → agent calls web_search/web_news → formats and presents results
+8. For memory: agent calls remember() to store info → recall() in future sessions to retrieve it → memory persists in SQLite
 
 ## Error Handling Strategy
 - **Prevention:** All file-modifying tools validate syntax before writing
