@@ -15,12 +15,14 @@ agent/
 ├── capabilities.json    # Checklist of capabilities (checked/unchecked)
 ├── improvements.md      # Log of all self-improvements made
 ├── memory.db            # SQLite database for persistent memory across sessions
+├── planning.db          # SQLite database for task plans and progress tracking
 └── tools/
     ├── __init__.py          # Empty — makes tools/ a Python package
     ├── error_utils.py       # Error handling foundation — decorators, safe writes, validation
     ├── capability_tools.py  # Tools for managing the capability checklist
     ├── dep_tools.py         # Dependency management tools
     ├── memory_tools.py      # Persistent memory — store/recall facts, preferences, context
+    ├── planning_tools.py    # Structured task planning — plans, tasks, dependencies, progress
     ├── prompt_tools.py      # Tools for safely inspecting and modifying the system prompt
     ├── recovery_tools.py    # Error recovery and diagnostic tools
     ├── self_tools.py        # Tools for self-inspection and logging improvements
@@ -34,7 +36,7 @@ agent/
 - `create_agent()` — Factory function that instantiates an `agno.agent.Agent`
 - Wires together: model, instructions, and all tools
 - External tools: `PythonTools` (run code), `ShellTools` (run commands), `LocalFileSystemTools` (read/write files)
-- Custom tools: capability management + self-inspection + prompt modification + tool creation + recovery + web search + memory
+- Custom tools: capability management + self-inspection + prompt modification + tool creation + recovery + web search + memory + planning
 
 ### prompts.py — The Brain
 - `get_system_prompt()` returns a list of instruction strings
@@ -121,6 +123,30 @@ agent/
 - Uses `@safe_tool` decorator for graceful error handling
 - No external dependencies — uses Python's built-in `sqlite3`
 
+### tools/planning_tools.py — Task Planning & Decomposition
+- `create_plan(title, description, tasks)` — Create a new plan with optional pre-populated tasks
+  - Pass comma-separated task titles to auto-create ordered tasks
+  - Plans start with 'active' status
+- `add_task(plan_id, title, description, depends_on)` — Add a task to an existing plan
+  - Supports task dependencies via comma-separated task IDs
+  - Auto-sets status to 'blocked' if dependencies aren't done
+  - Validates dependencies exist in the same plan
+- `update_task(task_id, status)` — Update task status with cascade effects
+  - Statuses: `pending`, `in_progress`, `done`, `blocked`, `skipped`
+  - Completing a task auto-unblocks dependent tasks when all their deps are satisfied
+  - Auto-completes the plan when all tasks are done/skipped
+- `show_plan(plan_id)` — Display plan with progress bar, stats, and full task list
+  - Shows visual progress bar, counts by status, dependency chains
+- `list_plans(status)` — List plans filtered by status ('active', 'completed', 'archived', 'all')
+  - Shows task completion percentage for each plan
+- `get_next_task(plan_id)` — Get the next actionable task (in_progress first, then pending)
+  - Suggests the `update_task` command to start it
+- `remove_plan(plan_id)` — Delete a plan and all its tasks permanently
+- Data stored in `planning.db` (SQLite) with foreign keys and indexed columns
+- Schema: `plans(id, title, description, status, created_at, updated_at)`, `tasks(id, plan_id, title, description, status, order_index, depends_on, created_at, updated_at)`
+- Uses `@safe_tool` decorator for graceful error handling
+- No external dependencies — uses Python's built-in `sqlite3` and `json`
+
 ### tools/web_tools.py — Web Search & Research
 - `web_search(query, max_results)` — General web search via DuckDuckGo
   - Returns formatted results with titles, URLs, and snippets
@@ -147,6 +173,7 @@ agent/
 6. For error recovery: health_check → diagnose → recover_backup or fix manually
 7. For web search: user asks question → agent calls web_search/web_news → formats and presents results
 8. For memory: agent calls remember() to store info → recall() in future sessions to retrieve it → memory persists in SQLite
+9. For planning: create_plan → add tasks with dependencies → work through tasks → update_task cascades unblocks → plan auto-completes
 
 ## Error Handling Strategy
 - **Prevention:** All file-modifying tools validate syntax before writing

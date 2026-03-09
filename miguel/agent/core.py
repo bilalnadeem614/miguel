@@ -52,6 +52,15 @@ from miguel.agent.tools.memory_tools import (
     forget,
     list_memories,
 )
+from miguel.agent.tools.planning_tools import (
+    create_plan,
+    add_task,
+    update_task,
+    show_plan,
+    list_plans,
+    get_next_task,
+    remove_plan,
+)
 
 
 def create_agent(interactive: bool = False) -> Agent:
@@ -96,11 +105,18 @@ def create_agent(interactive: bool = False) -> Agent:
             web_search,
             web_news,
             web_search_detailed,
-                    remember,
+            remember,
             recall,
             forget,
             list_memories,
-],
+            create_plan,
+            add_task,
+            update_task,
+            show_plan,
+            list_plans,
+            get_next_task,
+            remove_plan,
+        ],
         markdown=True,
         **(
             {

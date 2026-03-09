@@ -126,10 +126,10 @@
       "title": "Structured task planning and decomposition",
       "description": "Add a planning tool that breaks complex user requests into ordered sub-tasks, tracks progress through them, and handles dependencies. This enables Miguel to tackle multi-step projects (e.g. 'build me an app', 'research and write a report') systematically rather than ad-hoc.",
       "priority": 3,
-      "status": "unchecked",
+      "status": "checked",
       "category": "self-generated",
       "added_at": "2026-03-09T12:41:56.726247+00:00",
-      "completed_at": null
+      "completed_at": "2026-03-09T17:05:56.772283+00:00"
     },
     {
       "id": "cap-014",
