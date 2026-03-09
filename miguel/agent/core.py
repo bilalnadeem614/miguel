@@ -1,0 +1,41 @@
+"""Miguel agent factory. This file is the heart of what Miguel modifies."""
+
+from agno.agent import Agent
+from agno.models.anthropic import Claude
+from agno.tools.python import PythonTools
+from agno.tools.shell import ShellTools
+from pathlib import Path
+
+from agno.tools.local_file_system import LocalFileSystemTools
+
+from miguel.agent.config import MODEL_ID
+from miguel.agent.prompts import get_system_prompt
+from miguel.agent.tools.capability_tools import (
+    get_capabilities,
+    get_next_capability,
+    check_capability,
+    add_capability,
+)
+from miguel.agent.tools.self_tools import read_own_file, list_own_files, log_improvement
+
+
+def create_agent() -> Agent:
+    """Create and return a configured Miguel agent instance."""
+    return Agent(
+        name="Miguel",
+        model=Claude(id=MODEL_ID),
+        instructions=get_system_prompt(),
+        tools=[
+            PythonTools(base_dir=Path(__file__).parent),
+            ShellTools(base_dir=Path(__file__).parent),
+            LocalFileSystemTools(target_directory=str(Path(__file__).parent)),
+            get_capabilities,
+            get_next_capability,
+            check_capability,
+            add_capability,
+            read_own_file,
+            list_own_files,
+            log_improvement,
+        ],
+        markdown=True,
+    )

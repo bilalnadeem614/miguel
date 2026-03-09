@@ -1,0 +1,3 @@
+AGENT_VERSION = "0.1.0"
+MODEL_ID = "claude-opus-4-6"
+MAX_TOOL_RETRIES = 3

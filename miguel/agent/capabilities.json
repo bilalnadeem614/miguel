@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "capabilities": [
+    {
+      "id": "cap-001",
+      "title": "Respond to basic questions",
+      "description": "Agent can answer simple questions accurately in interactive mode",
+      "priority": 1,
+      "status": "unchecked",
+      "category": "core",
+      "added_at": "2026-03-09T00:00:00",
+      "completed_at": null
+    },
+    {
+      "id": "cap-002",
+      "title": "Read and explain own source code",
+      "description": "Agent can read its own files and explain what each part does",
+      "priority": 2,
+      "status": "unchecked",
+      "category": "self-awareness",
+      "added_at": "2026-03-09T00:00:00",
+      "completed_at": null
+    },
+    {
+      "id": "cap-003",
+      "title": "Modify own instructions and prompts",
+      "description": "Agent can improve its own system prompts to be more effective",
+      "priority": 3,
+      "status": "unchecked",
+      "category": "self-improvement",
+      "added_at": "2026-03-09T00:00:00",
+      "completed_at": null
+    },
+    {
+      "id": "cap-004",
+      "title": "Create new custom tools",
+      "description": "Agent can write new tool functions and integrate them into its own toolset",
+      "priority": 4,
+      "status": "unchecked",
+      "category": "self-improvement",
+      "added_at": "2026-03-09T00:00:00",
+      "completed_at": null
+    },
+    {
+      "id": "cap-005",
+      "title": "Error handling and recovery",
+      "description": "Agent handles errors gracefully and can recover from failures",
+      "priority": 5,
+      "status": "unchecked",
+      "category": "robustness",
+      "added_at": "2026-03-09T00:00:00",
+      "completed_at": null
+    },
+    {
+      "id": "cap-006",
+      "title": "Execute and validate Python code",
+      "description": "Agent can write Python code, execute it, and validate the output",
+      "priority": 6,
+      "status": "unchecked",
+      "category": "capability",
+      "added_at": "2026-03-09T00:00:00",
+      "completed_at": null
+    },
+    {
+      "id": "cap-007",
+      "title": "Maintain improvement context",
+      "description": "Agent maintains context about past improvements to inform future ones",
+      "priority": 7,
+      "status": "unchecked",
+      "category": "memory",
+      "added_at": "2026-03-09T00:00:00",
+      "completed_at": null
+    },
+    {
+      "id": "cap-008",
+      "title": "Validate own code before writing",
+      "description": "Agent checks code for syntax errors and logical issues before saving",
+      "priority": 8,
+      "status": "unchecked",
+      "category": "safety",
+      "added_at": "2026-03-09T00:00:00",
+      "completed_at": null
+    },
+    {
+      "id": "cap-009",
+      "title": "Refactor and optimize existing code",
+      "description": "Agent can identify and improve inefficient or messy code in its own codebase",
+      "priority": 9,
+      "status": "unchecked",
+      "category": "quality",
+      "added_at": "2026-03-09T00:00:00",
+      "completed_at": null
+    },
+    {
+      "id": "cap-010",
+      "title": "Generate new capabilities autonomously",
+      "description": "Agent can think of new things it should be able to do and add them to the checklist",
+      "priority": 10,
+      "status": "unchecked",
+      "category": "self-improvement",
+      "added_at": "2026-03-09T00:00:00",
+      "completed_at": null
+    }
+  ]
+}
