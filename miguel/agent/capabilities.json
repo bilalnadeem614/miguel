@@ -56,49 +56,109 @@
       "title": "Execute and validate Python code",
       "description": "Agent can write Python code, execute it, and validate the output",
       "priority": 6,
-      "status": "unchecked",
+      "status": "checked",
       "category": "capability",
       "added_at": "2026-03-09T00:00:00",
-      "completed_at": null
+      "completed_at": "2026-03-09T12:41:39.934007+00:00"
     },
     {
       "id": "cap-007",
       "title": "Maintain improvement context",
       "description": "Agent maintains context about past improvements to inform future ones",
       "priority": 7,
-      "status": "unchecked",
+      "status": "checked",
       "category": "memory",
       "added_at": "2026-03-09T00:00:00",
-      "completed_at": null
+      "completed_at": "2026-03-09T12:41:39.936158+00:00"
     },
     {
       "id": "cap-008",
       "title": "Validate own code before writing",
       "description": "Agent checks code for syntax errors and logical issues before saving",
       "priority": 8,
-      "status": "unchecked",
+      "status": "checked",
       "category": "safety",
       "added_at": "2026-03-09T00:00:00",
-      "completed_at": null
+      "completed_at": "2026-03-09T12:41:39.937492+00:00"
     },
     {
       "id": "cap-009",
       "title": "Refactor and optimize existing code",
       "description": "Agent can identify and improve inefficient or messy code in its own codebase",
       "priority": 9,
-      "status": "unchecked",
+      "status": "checked",
       "category": "quality",
       "added_at": "2026-03-09T00:00:00",
-      "completed_at": null
+      "completed_at": "2026-03-09T12:41:39.938634+00:00"
     },
     {
       "id": "cap-010",
       "title": "Generate new capabilities autonomously",
       "description": "Agent can think of new things it should be able to do and add them to the checklist",
       "priority": 10,
-      "status": "unchecked",
+      "status": "checked",
       "category": "self-improvement",
       "added_at": "2026-03-09T00:00:00",
+      "completed_at": "2026-03-09T12:41:39.939722+00:00"
+    },
+    {
+      "id": "cap-011",
+      "title": "Web search and information retrieval",
+      "description": "Add web search capability (e.g. via DuckDuckGo, Tavily, or similar) so Miguel can look up current information, research topics, find documentation, and answer questions about recent events. This is the single biggest gap \u2014 without it, Miguel is limited to its training data.",
+      "priority": 1,
+      "status": "unchecked",
+      "category": "self-generated",
+      "added_at": "2026-03-09T12:41:56.722373+00:00",
+      "completed_at": null
+    },
+    {
+      "id": "cap-012",
+      "title": "Persistent memory across sessions",
+      "description": "Implement a memory system that persists across conversations. Should store: key facts learned, user preferences, project context, and past interaction summaries. Could use a local JSON/SQLite store or Agno's built-in memory features. Without this, every conversation starts from zero.",
+      "priority": 2,
+      "status": "unchecked",
+      "category": "self-generated",
+      "added_at": "2026-03-09T12:41:56.724804+00:00",
+      "completed_at": null
+    },
+    {
+      "id": "cap-013",
+      "title": "Structured task planning and decomposition",
+      "description": "Add a planning tool that breaks complex user requests into ordered sub-tasks, tracks progress through them, and handles dependencies. This enables Miguel to tackle multi-step projects (e.g. 'build me an app', 'research and write a report') systematically rather than ad-hoc.",
+      "priority": 3,
+      "status": "unchecked",
+      "category": "self-generated",
+      "added_at": "2026-03-09T12:41:56.726247+00:00",
+      "completed_at": null
+    },
+    {
+      "id": "cap-014",
+      "title": "File analysis \u2014 PDF, CSV, images, and structured data",
+      "description": "Add tools to read and analyze common file formats: parse PDFs (text extraction), load and analyze CSVs/Excel files (with pandas), and describe images. This makes Miguel useful for real-world data tasks like 'analyze this spreadsheet' or 'summarize this PDF'.",
+      "priority": 4,
+      "status": "unchecked",
+      "category": "self-generated",
+      "added_at": "2026-03-09T12:41:56.728056+00:00",
+      "completed_at": null
+    },
+    {
+      "id": "cap-015",
+      "title": "API integration framework",
+      "description": "Create a flexible HTTP client tool that can call external REST APIs with configurable auth, headers, and response parsing. Include pre-built integrations for common APIs (weather, news, etc). This lets Miguel interact with the broader world of web services.",
+      "priority": 5,
+      "status": "unchecked",
+      "category": "self-generated",
+      "added_at": "2026-03-09T12:41:56.729629+00:00",
+      "completed_at": null
+    },
+    {
+      "id": "cap-016",
+      "title": "Project scaffolding and code generation",
+      "description": "Add the ability to create full project structures \u2014 generate directory trees, boilerplate files, config files, and starter code for common project types (Python packages, web apps, scripts, etc). Should write files outside the agent directory when the user requests it. Makes Miguel a practical development assistant.",
+      "priority": 6,
+      "status": "unchecked",
+      "category": "self-generated",
+      "added_at": "2026-03-09T12:41:56.731192+00:00",
       "completed_at": null
     }
   ]
