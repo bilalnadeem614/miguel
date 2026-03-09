@@ -19,6 +19,7 @@ agent/
 └── tools/
     ├── __init__.py              # Empty — makes tools/ a Python package
     ├── error_utils.py           # Error handling foundation — decorators, safe writes, validation
+    ├── api_tools.py             # HTTP client and API integrations — REST calls, auth, quickstart services
     ├── capability_tools.py      # Tools for managing the capability checklist
     ├── dep_tools.py             # Dependency management tools
     ├── file_analysis_tools.py   # File analysis — PDF, CSV/Excel, images, structured data
@@ -37,7 +38,7 @@ agent/
 - `create_agent()` — Factory function that instantiates an `agno.agent.Agent`
 - Wires together: model, instructions, and all tools
 - External tools: `PythonTools` (run code), `ShellTools` (run commands), `LocalFileSystemTools` (read/write files)
-- Custom tools: capability management + self-inspection + prompt modification + tool creation + recovery + web search + memory + planning + file analysis
+- Custom tools: capability management + self-inspection + prompt modification + tool creation + recovery + web search + memory + planning + file analysis + API integration
 
 ### prompts.py — The Brain
 - `get_system_prompt()` returns a list of instruction strings
@@ -176,6 +177,33 @@ agent/
 - All functions use `@safe_tool` decorator for graceful error handling
 - Dependencies: `pymupdf`, `pandas`, `openpyxl`, `Pillow`
 
+### tools/api_tools.py — HTTP Client & API Integrations
+- `http_request(url, method, headers, body, params, auth_type, auth_value, timeout, include_headers)` — Full-featured HTTP client
+  - Supports all HTTP methods: GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS
+  - Custom headers and query parameters via JSON strings
+  - Request bodies with automatic JSON detection and Content-Type handling
+  - Authentication: Bearer token, Basic auth, API key in header, API key in query param
+  - Response auto-parsing: JSON, XML, HTML, plain text — formatted for readability
+  - Configurable timeout (1-120 seconds) with sensible defaults
+  - Response truncation for large payloads (5000 char limit with indicator)
+  - Custom User-Agent header (`Miguel-Agent/1.0`)
+- `api_get(url, params, headers)` — Convenience wrapper for quick GET requests
+- `api_post(url, body, headers)` — Convenience wrapper for quick POST requests with auto JSON detection
+- `api_quickstart(service, query)` — Pre-built integrations for 10 free APIs (no API key required):
+  - `weather <city>` — Current weather conditions from wttr.in (temperature, humidity, wind, UV, precipitation)
+  - `ip` / `ip <address>` — IP geolocation from ip-api.com (city, region, country, coordinates, ISP, timezone)
+  - `exchange <FROM> <TO> [amount]` — Currency exchange rates from Frankfurter API (European Central Bank data)
+  - `joke` — Random programming joke from official-joke-api
+  - `uuid` — UUID generation via httpbin.org
+  - `headers` — Request header inspection via httpbin.org
+  - `time <timezone>` — Current time in any timezone from worldtimeapi.org (with fuzzy timezone matching)
+  - `country <code>` — Country information from restcountries.com (population, area, languages, currencies, flag)
+  - `github <user>` — GitHub user profile from GitHub API (repos, followers, bio, location)
+  - `list` — Show all available quickstart services with usage examples
+- All functions use `@safe_tool` decorator for graceful error handling
+- Uses lazy imports of `requests` to avoid startup overhead
+- Dependency: `requests` (PyPI)
+
 ### tools/web_tools.py — Web Search & Research
 - `web_search(query, max_results)` — General web search via DuckDuckGo
   - Returns formatted results with titles, URLs, and snippets
@@ -204,6 +232,7 @@ agent/
 8. For memory: agent calls remember() to store info → recall() in future sessions to retrieve it → memory persists in SQLite
 9. For planning: create_plan → add tasks with dependencies → work through tasks → update_task cascades unblocks → plan auto-completes
 10. For file analysis: user shares file → agent calls analyze_csv/analyze_pdf/analyze_image → rich formatted analysis → csv_query for follow-up questions
+11. For API calls: agent calls http_request/api_get/api_post for custom endpoints → api_quickstart for common free APIs → responses auto-parsed and formatted
 
 ## Error Handling Strategy
 - **Prevention:** All file-modifying tools validate syntax before writing

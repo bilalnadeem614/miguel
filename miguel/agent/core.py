@@ -67,6 +67,12 @@ from miguel.agent.tools.file_analysis_tools import (
     analyze_image,
     csv_query,
 )
+from miguel.agent.tools.api_tools import (
+    http_request,
+    api_get,
+    api_post,
+    api_quickstart,
+)
 
 
 def create_agent(interactive: bool = False) -> Agent:
@@ -126,6 +132,10 @@ def create_agent(interactive: bool = False) -> Agent:
             analyze_pdf,
             analyze_image,
             csv_query,
+            http_request,
+            api_get,
+            api_post,
+            api_quickstart,
         ],
         markdown=True,
         **(

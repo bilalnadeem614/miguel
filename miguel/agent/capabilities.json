@@ -146,10 +146,10 @@
       "title": "API integration framework",
       "description": "Create a flexible HTTP client tool that can call external REST APIs with configurable auth, headers, and response parsing. Include pre-built integrations for common APIs (weather, news, etc). This lets Miguel interact with the broader world of web services.",
       "priority": 5,
-      "status": "unchecked",
+      "status": "checked",
       "category": "self-generated",
       "added_at": "2026-03-09T12:41:56.729629+00:00",
-      "completed_at": null
+      "completed_at": "2026-03-09T17:52:26.250111+00:00"
     },
     {
       "id": "cap-016",
