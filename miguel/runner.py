@@ -104,6 +104,21 @@ def _read_file_safe(path: Path) -> str:
         return "(file not found)"
 
 
+def _get_next_capability(capabilities_json: str) -> tuple[str, str, str]:
+    """Parse capabilities JSON and return (id, title, json) of next unchecked, or None."""
+    import json as _json
+    try:
+        data = _json.loads(capabilities_json)
+        unchecked = [c for c in data["capabilities"] if c["status"] == "unchecked"]
+        if not unchecked:
+            return "", "", "ALL_CHECKED"
+        unchecked.sort(key=lambda c: c["priority"])
+        cap = unchecked[0]
+        return cap["id"], cap["title"], _json.dumps(cap, indent=2)
+    except Exception:
+        return "", "", "ERROR"
+
+
 def _build_meta_prompt(batch_num: int) -> str:
     capabilities = _read_file_safe(AGENT_DIR / "capabilities.json")
     improvements = _read_file_safe(AGENT_DIR / "improvements.md")
@@ -113,6 +128,21 @@ def _build_meta_prompt(batch_num: int) -> str:
     # Truncate improvements log to last 3000 chars to stay within context
     if len(improvements) > 3000:
         improvements = "...(truncated)...\n" + improvements[-3000:]
+
+    # Pre-fetch next capability so the agent can't get confused about which one to do
+    cap_id, cap_title, cap_json = _get_next_capability(capabilities)
+    if cap_id:
+        target_section = f"""TARGET CAPABILITY FOR THIS BATCH:
+ID: {cap_id}
+Title: {cap_title}
+Details:
+{cap_json}
+
+You MUST implement THIS specific capability ({cap_id}: {cap_title}).
+Do NOT implement a different capability. When done, call check_capability('{cap_id}')."""
+    else:
+        target_section = """ALL CAPABILITIES ARE CHECKED.
+Use add_capability to create 3 new capabilities, then pick one and implement it."""
 
     return f"""You are running improvement batch #{batch_num}.
 
@@ -133,17 +163,17 @@ YOUR CURRENT PROMPTS (agent/prompts.py):
 CAPABILITIES CHECKLIST:
 {capabilities}
 
+{target_section}
+
 RECENT IMPROVEMENTS:
 {improvements}
 
 INSTRUCTIONS:
-1. Use get_next_capability to find the highest-priority unchecked capability
-2. If ALL_CHECKED: use add_capability to create 3 new capabilities first, then pick one
-3. Implement the capability by modifying your files in agent/ using write_file with ABSOLUTE paths
-4. Use check_capability to mark it as completed
-5. Use log_improvement to record what you did and which files you changed
-6. If ANY tool call fails: diagnose the root cause, fix it, do NOT retry the same thing
-7. Update agent/README.md to reflect your current state (capabilities, tools, features). The runner will copy it to the project root for GitHub.
+1. Implement the target capability shown above by modifying your files in agent/ using write_file with ABSOLUTE paths
+2. Use check_capability to mark it as completed — use the EXACT ID shown above
+3. Use log_improvement to record what you did and which files you changed
+4. If ANY tool call fails: diagnose the root cause, fix it, do NOT retry the same thing
+5. Update agent/README.md to reflect your current state (capabilities, tools, features). The runner will copy it to the project root for GitHub.
 
 Make exactly ONE focused improvement this batch. Be precise and ensure valid Python syntax."""
 
