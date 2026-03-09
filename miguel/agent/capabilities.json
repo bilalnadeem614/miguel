@@ -136,10 +136,10 @@
       "title": "File analysis \u2014 PDF, CSV, images, and structured data",
       "description": "Add tools to read and analyze common file formats: parse PDFs (text extraction), load and analyze CSVs/Excel files (with pandas), and describe images. This makes Miguel useful for real-world data tasks like 'analyze this spreadsheet' or 'summarize this PDF'.",
       "priority": 4,
-      "status": "unchecked",
+      "status": "checked",
       "category": "self-generated",
       "added_at": "2026-03-09T12:41:56.728056+00:00",
-      "completed_at": null
+      "completed_at": "2026-03-09T17:44:05.176658+00:00"
     },
     {
       "id": "cap-015",

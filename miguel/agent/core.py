@@ -61,6 +61,12 @@ from miguel.agent.tools.planning_tools import (
     get_next_task,
     remove_plan,
 )
+from miguel.agent.tools.file_analysis_tools import (
+    analyze_csv,
+    analyze_pdf,
+    analyze_image,
+    csv_query,
+)
 
 
 def create_agent(interactive: bool = False) -> Agent:
@@ -116,6 +122,10 @@ def create_agent(interactive: bool = False) -> Agent:
             list_plans,
             get_next_task,
             remove_plan,
+            analyze_csv,
+            analyze_pdf,
+            analyze_image,
+            csv_query,
         ],
         markdown=True,
         **(

@@ -17,17 +17,18 @@ agent/
 ├── memory.db            # SQLite database for persistent memory across sessions
 ├── planning.db          # SQLite database for task plans and progress tracking
 └── tools/
-    ├── __init__.py          # Empty — makes tools/ a Python package
-    ├── error_utils.py       # Error handling foundation — decorators, safe writes, validation
-    ├── capability_tools.py  # Tools for managing the capability checklist
-    ├── dep_tools.py         # Dependency management tools
-    ├── memory_tools.py      # Persistent memory — store/recall facts, preferences, context
-    ├── planning_tools.py    # Structured task planning — plans, tasks, dependencies, progress
-    ├── prompt_tools.py      # Tools for safely inspecting and modifying the system prompt
-    ├── recovery_tools.py    # Error recovery and diagnostic tools
-    ├── self_tools.py        # Tools for self-inspection and logging improvements
-    ├── tool_creator.py      # Tools for creating new tools and auto-registering them
-    └── web_tools.py         # Web search and information retrieval via DuckDuckGo
+    ├── __init__.py              # Empty — makes tools/ a Python package
+    ├── error_utils.py           # Error handling foundation — decorators, safe writes, validation
+    ├── capability_tools.py      # Tools for managing the capability checklist
+    ├── dep_tools.py             # Dependency management tools
+    ├── file_analysis_tools.py   # File analysis — PDF, CSV/Excel, images, structured data
+    ├── memory_tools.py          # Persistent memory — store/recall facts, preferences, context
+    ├── planning_tools.py        # Structured task planning — plans, tasks, dependencies, progress
+    ├── prompt_tools.py          # Tools for safely inspecting and modifying the system prompt
+    ├── recovery_tools.py        # Error recovery and diagnostic tools
+    ├── self_tools.py            # Tools for self-inspection and logging improvements
+    ├── tool_creator.py          # Tools for creating new tools and auto-registering them
+    └── web_tools.py             # Web search and information retrieval via DuckDuckGo
 ```
 
 ## Key Components
@@ -36,7 +37,7 @@ agent/
 - `create_agent()` — Factory function that instantiates an `agno.agent.Agent`
 - Wires together: model, instructions, and all tools
 - External tools: `PythonTools` (run code), `ShellTools` (run commands), `LocalFileSystemTools` (read/write files)
-- Custom tools: capability management + self-inspection + prompt modification + tool creation + recovery + web search + memory + planning
+- Custom tools: capability management + self-inspection + prompt modification + tool creation + recovery + web search + memory + planning + file analysis
 
 ### prompts.py — The Brain
 - `get_system_prompt()` returns a list of instruction strings
@@ -147,6 +148,34 @@ agent/
 - Uses `@safe_tool` decorator for graceful error handling
 - No external dependencies — uses Python's built-in `sqlite3` and `json`
 
+### tools/file_analysis_tools.py — File Analysis & Data Processing
+- `analyze_csv(file_path, max_rows, query)` — Load and analyze tabular data files
+  - Supports CSV, TSV, Excel (.xlsx/.xls), JSON, and Parquet formats
+  - Shows shape, column types, non-null counts, unique values, sample data
+  - Numeric statistics (mean, std, min, max, quartiles) via pandas describe
+  - Missing value summary with counts and percentages
+  - Optional pandas query filtering (e.g. `age > 30`, `country == 'US'`)
+- `analyze_pdf(file_path, max_pages, page_range)` — Extract and analyze PDF text
+  - Full text extraction using PyMuPDF (fast, accurate)
+  - Metadata extraction (title, author, subject, creator, producer)
+  - Page-by-page text output with word/character counts
+  - Page range support: "1-5", "1,3,7", or combinations
+  - Detects pages with no extractable text (scanned/image-based)
+- `analyze_image(file_path)` — Analyze image files
+  - Supports PNG, JPEG, GIF, BMP, TIFF, WebP, and more (via Pillow)
+  - Reports format, mode, dimensions, file size, DPI, animation info
+  - EXIF metadata extraction (camera make/model, exposure, focal length, GPS)
+  - Color analysis: dominant colors (quantized palette), channel statistics
+  - Brightness estimation with human-readable labels
+- `csv_query(file_path, query)` — Run arbitrary pandas expressions on data files
+  - Variable `df` represents the loaded data
+  - Supports any pandas operation: groupby, pivot, corr, value_counts, etc.
+  - Restricted namespace for safety (no builtins access)
+  - Helpful error messages with column names and query tips
+- Smart file path resolution: checks agent dir, user files dir, and absolute paths
+- All functions use `@safe_tool` decorator for graceful error handling
+- Dependencies: `pymupdf`, `pandas`, `openpyxl`, `Pillow`
+
 ### tools/web_tools.py — Web Search & Research
 - `web_search(query, max_results)` — General web search via DuckDuckGo
   - Returns formatted results with titles, URLs, and snippets
@@ -174,6 +203,7 @@ agent/
 7. For web search: user asks question → agent calls web_search/web_news → formats and presents results
 8. For memory: agent calls remember() to store info → recall() in future sessions to retrieve it → memory persists in SQLite
 9. For planning: create_plan → add tasks with dependencies → work through tasks → update_task cascades unblocks → plan auto-completes
+10. For file analysis: user shares file → agent calls analyze_csv/analyze_pdf/analyze_image → rich formatted analysis → csv_query for follow-up questions
 
 ## Error Handling Strategy
 - **Prevention:** All file-modifying tools validate syntax before writing
@@ -189,4 +219,5 @@ agent/
 - `LocalFileSystemTools` is scoped to agent/ directory
 - `modify_prompt_section` validates syntax before writing (prevents self-corruption)
 - `create_tool` validates syntax and docstrings before writing, validates core.py after modification
+- `csv_query` uses restricted namespace (no builtins) for eval safety
 - System prompt explicitly forbids modifying files outside agent/
