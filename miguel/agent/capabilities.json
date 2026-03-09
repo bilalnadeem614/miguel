@@ -26,10 +26,10 @@
       "title": "Modify own instructions and prompts",
       "description": "Agent can improve its own system prompts to be more effective",
       "priority": 3,
-      "status": "unchecked",
+      "status": "checked",
       "category": "self-improvement",
       "added_at": "2026-03-09T00:00:00",
-      "completed_at": null
+      "completed_at": "2026-03-09T11:53:05.417784+00:00"
     },
     {
       "id": "cap-004",

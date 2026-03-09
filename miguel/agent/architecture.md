@@ -17,6 +17,7 @@ agent/
 └── tools/
     ├── __init__.py      # Empty — makes tools/ a Python package
     ├── capability_tools.py  # Tools for managing the capability checklist
+    ├── prompt_tools.py      # Tools for safely inspecting and modifying the system prompt
     └── self_tools.py    # Tools for self-inspection and logging improvements
 ```
 
@@ -26,12 +27,13 @@ agent/
 - `create_agent()` — Factory function that instantiates an `agno.agent.Agent`
 - Wires together: model, instructions, and all tools
 - External tools: `PythonTools` (run code), `ShellTools` (run commands), `LocalFileSystemTools` (read/write files)
-- Custom tools: capability management + self-inspection
+- Custom tools: capability management + self-inspection + prompt modification
 
 ### prompts.py — The Brain
 - `get_system_prompt()` returns a list of instruction strings
 - Defines Miguel's identity, behavior rules, and improvement process
 - This file is the primary target for self-improvement
+- Can be safely modified using the prompt_tools
 
 ### config.py — Settings
 - `MODEL_ID` — Which Claude model to use
@@ -48,14 +50,25 @@ agent/
 ### tools/self_tools.py — Self-Awareness
 - `read_own_file(path)` — Read any file in agent/ (with security check)
 - `list_own_files()` — List all files in agent/
+- `get_architecture()` — Return this architecture map
 - `log_improvement(summary, files)` — Append to improvements.md
+
+### tools/prompt_tools.py — Prompt Self-Modification
+- `get_prompt_sections()` — Parse and list all sections in the system prompt with line counts
+- `modify_prompt_section(section_name, new_content, action)` — Safely modify prompt sections
+  - Actions: `replace` (overwrite), `append` (add lines), `add_new` (create section)
+  - Uses AST parsing to extract current prompt lines
+  - Validates generated Python syntax before writing — prevents breaking prompts.py
+  - Handles f-strings containing `{AGENT_DIR}` correctly
 
 ## Data Flow
 1. User message → `create_agent()` builds Agent → Claude processes with system prompt
 2. Claude decides which tools to call → tools execute → results fed back
 3. For self-improvement: read checklist → implement change → write files → mark done → log
+4. For prompt modification: parse sections → modify → validate syntax → write → confirm
 
 ## Security Boundaries
 - `read_own_file` refuses to read outside agent/
 - `LocalFileSystemTools` is scoped to agent/ directory
+- `modify_prompt_section` validates syntax before writing (prevents self-corruption)
 - System prompt explicitly forbids modifying files outside agent/

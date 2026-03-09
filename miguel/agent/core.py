@@ -22,6 +22,10 @@ from miguel.agent.tools.self_tools import (
     get_architecture,
     log_improvement,
 )
+from miguel.agent.tools.prompt_tools import (
+    get_prompt_sections,
+    modify_prompt_section,
+)
 
 
 def create_agent() -> Agent:
@@ -42,6 +46,8 @@ def create_agent() -> Agent:
             list_own_files,
             get_architecture,
             log_improvement,
+            get_prompt_sections,
+            modify_prompt_section,
         ],
         markdown=True,
     )
