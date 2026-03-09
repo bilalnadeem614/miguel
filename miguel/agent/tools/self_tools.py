@@ -5,6 +5,7 @@ from pathlib import Path
 
 AGENT_DIR = Path(__file__).parent.parent
 IMPROVEMENTS_PATH = AGENT_DIR / "improvements.md"
+ARCHITECTURE_PATH = AGENT_DIR / "architecture.md"
 
 
 def read_own_file(file_path: str) -> str:
@@ -24,6 +25,13 @@ def list_own_files() -> str:
         if p.is_file() and "__pycache__" not in str(p):
             files.append(str(p.relative_to(AGENT_DIR)))
     return "\n".join(files) if files else "No files found."
+
+
+def get_architecture() -> str:
+    """Return Miguel's architecture map — a structured description of all components, their roles, and how they connect. Use this to explain how Miguel works."""
+    if ARCHITECTURE_PATH.exists():
+        return ARCHITECTURE_PATH.read_text()
+    return "Error: architecture.md not found. Use list_own_files and read_own_file to inspect the codebase manually."
 
 
 def log_improvement(summary: str, files_changed: str) -> str:

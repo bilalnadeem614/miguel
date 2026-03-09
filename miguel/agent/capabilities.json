@@ -16,10 +16,10 @@
       "title": "Read and explain own source code",
       "description": "Agent can read its own files and explain what each part does",
       "priority": 2,
-      "status": "unchecked",
+      "status": "checked",
       "category": "self-awareness",
       "added_at": "2026-03-09T00:00:00",
-      "completed_at": null
+      "completed_at": "2026-03-09T11:46:26.365247+00:00"
     },
     {
       "id": "cap-003",

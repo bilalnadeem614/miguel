@@ -16,7 +16,12 @@ from miguel.agent.tools.capability_tools import (
     check_capability,
     add_capability,
 )
-from miguel.agent.tools.self_tools import read_own_file, list_own_files, log_improvement
+from miguel.agent.tools.self_tools import (
+    read_own_file,
+    list_own_files,
+    get_architecture,
+    log_improvement,
+)
 
 
 def create_agent() -> Agent:
@@ -35,6 +40,7 @@ def create_agent() -> Agent:
             add_capability,
             read_own_file,
             list_own_files,
+            get_architecture,
             log_improvement,
         ],
         markdown=True,
