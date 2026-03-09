@@ -4,6 +4,8 @@ import ast
 import re
 from pathlib import Path
 
+from miguel.agent.tools.error_utils import safe_tool
+
 AGENT_DIR = Path(__file__).parent.parent
 CORE_PATH = AGENT_DIR / "core.py"
 TOOLS_DIR = AGENT_DIR / "tools"
@@ -42,7 +44,15 @@ def _has_docstring(code: str, func_name: str) -> bool:
 
 def _register_tools_in_core(file_name: str, func_names: list[str]) -> str:
     """Add import and tool registration for given functions to core.py."""
+    if not CORE_PATH.exists():
+        return "Error: core.py not found. Cannot register tools."
+    
     core_code = CORE_PATH.read_text()
+    
+    # Backup core.py before modifying
+    backup_path = CORE_PATH.with_suffix(".py.bak")
+    backup_path.write_text(core_code)
+    
     module_name = file_name.replace(".py", "")
     import_module = f"miguel.agent.tools.{module_name}"
 
@@ -106,12 +116,15 @@ def _register_tools_in_core(file_name: str, func_names: list[str]) -> str:
     # Validate the modified core.py before writing
     is_valid, error = _validate_python(new_code)
     if not is_valid:
-        return f"Warning: Modified core.py would have syntax errors ({error}). Skipped registration — add manually."
+        # Restore backup
+        backup_path.rename(CORE_PATH)
+        return f"Warning: Modified core.py would have syntax errors ({error}). Restored backup. Add manually."
 
     CORE_PATH.write_text(new_code)
     return f"Registered {', '.join(new_funcs)} in core.py."
 
 
+@safe_tool
 def create_tool(file_name: str, code: str, register: bool = True) -> str:
     """Create a new tool file in tools/ and optionally register it in core.py.
 
@@ -124,6 +137,8 @@ def create_tool(file_name: str, code: str, register: bool = True) -> str:
         Success message listing created functions, or an error message.
     """
     # Validate file name
+    if not file_name or not file_name.strip():
+        return "Error: file_name must not be empty."
     if not file_name.endswith(".py"):
         return "Error: file_name must end with .py"
     if file_name.startswith("_"):
@@ -167,6 +182,7 @@ def create_tool(file_name: str, code: str, register: bool = True) -> str:
     return "\n".join(result_parts)
 
 
+@safe_tool
 def add_functions_to_tool(file_name: str, new_code: str) -> str:
     """Add new functions to an existing tool file and register them in core.py.
 
@@ -177,6 +193,9 @@ def add_functions_to_tool(file_name: str, new_code: str) -> str:
     Returns:
         Success message or error.
     """
+    if not file_name or not file_name.strip():
+        return "Error: file_name must not be empty."
+    
     target_path = TOOLS_DIR / file_name
 
     if not target_path.exists():
@@ -208,6 +227,10 @@ def add_functions_to_tool(file_name: str, new_code: str) -> str:
     is_valid, error = _validate_python(combined)
     if not is_valid:
         return f"Error: Combined code has syntax errors. {error}"
+
+    # Backup existing file before writing
+    backup_path = target_path.with_suffix(".py.bak")
+    backup_path.write_text(existing_code)
 
     # Write combined file
     target_path.write_text(combined)

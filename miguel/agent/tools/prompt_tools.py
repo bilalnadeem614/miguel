@@ -4,12 +4,16 @@ import ast
 import re
 from pathlib import Path
 
+from miguel.agent.tools.error_utils import safe_tool
+
 AGENT_DIR = Path(__file__).parent.parent
 PROMPTS_PATH = AGENT_DIR / "prompts.py"
 
 
 def _read_prompts_source() -> str:
     """Read the raw source of prompts.py."""
+    if not PROMPTS_PATH.exists():
+        raise FileNotFoundError(f"prompts.py not found at {PROMPTS_PATH}")
     return PROMPTS_PATH.read_text()
 
 
@@ -91,21 +95,16 @@ def get_system_prompt() -> list[str]:
     return source
 
 
-def get_prompt_sections() -> str:
-    """List all sections in the current system prompt with their line counts.
+def _extract_prompt_lines(source: str) -> list[str]:
+    """Extract prompt lines from prompts.py source using AST parsing.
     
-    Returns a formatted overview of prompt sections so you can decide what to modify.
+    Returns list of strings, or raises ValueError if parsing fails.
     """
-    source = _read_prompts_source()
-    
-    # Extract the return list from get_system_prompt
-    # We'll parse the actual function to get the lines
     try:
         tree = ast.parse(source)
     except SyntaxError as e:
-        return f"Error: prompts.py has a syntax error: {e}"
+        raise ValueError(f"prompts.py has a syntax error: {e}")
     
-    # Find the get_system_prompt function and extract string values
     lines = []
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef) and node.name == "get_system_prompt":
@@ -121,13 +120,23 @@ def get_prompt_sections() -> str:
                                 if isinstance(val, ast.Constant):
                                     parts.append(str(val.value))
                                 elif isinstance(val, ast.FormattedValue):
-                                    # Use placeholder
                                     parts.append("{AGENT_DIR}")
                             lines.append("".join(parts))
     
     if not lines:
-        return "Error: Could not parse prompt lines from prompts.py"
+        raise ValueError("Could not parse prompt lines from prompts.py — no return list found in get_system_prompt()")
     
+    return lines
+
+
+@safe_tool
+def get_prompt_sections() -> str:
+    """List all sections in the current system prompt with their line counts.
+    
+    Returns a formatted overview of prompt sections so you can decide what to modify.
+    """
+    source = _read_prompts_source()
+    lines = _extract_prompt_lines(source)
     sections = _parse_prompt_sections(lines)
     
     result = "## Current Prompt Sections\n\n"
@@ -139,6 +148,7 @@ def get_prompt_sections() -> str:
     return result
 
 
+@safe_tool
 def modify_prompt_section(section_name: str, new_content: str, action: str = "replace") -> str:
     """Modify a section of Miguel's system prompt.
     
@@ -153,34 +163,11 @@ def modify_prompt_section(section_name: str, new_content: str, action: str = "re
     if action not in ("replace", "append", "add_new"):
         return "Error: action must be 'replace', 'append', or 'add_new'"
     
+    if not section_name or not section_name.strip():
+        return "Error: section_name must not be empty."
+    
     source = _read_prompts_source()
-    
-    # Parse current prompt lines using AST
-    try:
-        tree = ast.parse(source)
-    except SyntaxError as e:
-        return f"Error: current prompts.py has a syntax error: {e}"
-    
-    lines = []
-    for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and node.name == "get_system_prompt":
-            for child in ast.walk(node):
-                if isinstance(child, ast.Return) and isinstance(child.value, ast.List):
-                    for elt in child.value.elts:
-                        if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
-                            lines.append(elt.value)
-                        elif isinstance(elt, ast.JoinedStr):
-                            parts = []
-                            for val in elt.values:
-                                if isinstance(val, ast.Constant):
-                                    parts.append(str(val.value))
-                                elif isinstance(val, ast.FormattedValue):
-                                    parts.append("{AGENT_DIR}")
-                            lines.append("".join(parts))
-    
-    if not lines:
-        return "Error: Could not parse prompt lines from prompts.py"
-    
+    lines = _extract_prompt_lines(source)
     sections = _parse_prompt_sections(lines)
     new_lines = new_content.split("\n")
     
@@ -206,6 +193,10 @@ def modify_prompt_section(section_name: str, new_content: str, action: str = "re
         ast.parse(new_source)
     except SyntaxError as e:
         return f"Error: Generated prompts.py has syntax error (aborting write): {e}"
+    
+    # Backup current file before writing
+    backup_path = PROMPTS_PATH.with_suffix(".py.bak")
+    backup_path.write_text(source)
     
     # Write the file
     PROMPTS_PATH.write_text(new_source)
