@@ -1,8 +1,21 @@
 [project]
 name = "miguel"
 version = "0.1.0"
-description = "A self-improving AI agent"
+description = "A self-improving AI agent that modifies its own source code, safely sandboxed in Docker"
 requires-python = ">=3.11"
+license = "CC-BY-NC-4.0"
+readme = "README.md"
+authors = [
+    {name = "soulfir"},
+]
+keywords = ["ai", "agent", "self-improving", "docker", "claude", "agno"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "agno",
     "anthropic",
