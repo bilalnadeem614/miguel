@@ -12,11 +12,11 @@
 
 Miguel is an AI agent that can rewrite itself. Not just generate code for you — it modifies *its own* source code, creates new tools, rewrites its own system prompts, and generates new capabilities it didn't start with.
 
-It began with 10 seed capabilities. It completed all 10, then autonomously generated 6 more and has already implemented 4 of those. Every improvement is validated (syntax, imports, schema), committed to git, and pushed to this repo. If validation fails, the batch is rolled back automatically. The agent literally cannot corrupt itself.
+It began with 10 seed capabilities. It completed all 10, then autonomously generated 6 more and has already implemented 5 of those. Every improvement is validated (syntax, imports, schema), committed to git, and pushed to this repo. If validation fails, the batch is rolled back automatically. The agent literally cannot corrupt itself.
 
 This is a **living repository**. Miguel auto-commits and pushes after each successful improvement. The code you see today will be different tomorrow as Miguel continues to evolve. Star or watch this repo to follow along.
 
-Beyond self-improvement, Miguel is also a fully interactive AI assistant — chat with it, have it search the web, remember things across sessions, plan multi-step projects, analyze your files, or work with your data.
+Beyond self-improvement, Miguel is also a fully interactive AI assistant — chat with it, have it search the web, call APIs, remember things across sessions, plan multi-step projects, analyze your files, or work with your data.
 
 ## What It Looks Like
 
@@ -38,6 +38,7 @@ Miguel: I'm a self-improving AI agent. Here's what I can do right now:
 
   - Answer questions and have conversations
   - Search the web for current information
+  - Call REST APIs and use pre-built integrations (weather, exchange rates, etc)
   - Remember facts and preferences across sessions
   - Break complex tasks into structured plans
   - Analyze PDFs, CSVs, Excel files, and images
@@ -79,6 +80,7 @@ Batch 1 succeeded: Added web search via DuckDuckGo
 
 - **Interactive REPL** — Chat with slash commands (`/help`, `/capabilities`, `/improve`, `/history`)
 - **Web search** — Search the web and news via DuckDuckGo, with region filtering
+- **API integration** — Call any REST API with configurable auth, headers, and body; 10 pre-built free API integrations
 - **Persistent memory** — Remembers facts, preferences, and context across sessions (SQLite-backed)
 - **Task planning** — Breaks complex requests into ordered tasks with dependencies and progress tracking
 - **File analysis** — Analyze PDFs, CSVs, Excel files, images, and structured data with rich output
@@ -145,7 +147,7 @@ miguel
 | `/history` | Show the improvement log |
 | `/quit` | Exit |
 
-Ask Miguel to search the web, remember your preferences, create a plan for a project, analyze files in `user_files/`, or query your data.
+Ask Miguel to search the web, call APIs, remember your preferences, create a plan for a project, analyze files in `user_files/`, or query your data.
 
 ### Improvement Mode
 
@@ -168,7 +170,7 @@ HOST (your machine)                           DOCKER CONTAINER (sandboxed)
 │  Improvement runner          │   HTTP/SSE   │                              │
 │  Git commit/push             │ ◄──────────► │  Agent + all tool execution  │
 │  Validation checks           │              │  Shell, Python, file I/O     │
-│  Terminal display            │              │  35+ tools                   │
+│  Terminal display            │              │  40+ tools                   │
 └──────────────────────────────┘              └──────────────────────────────┘
 ```
 
@@ -247,7 +249,7 @@ These were created by Miguel itself after completing all seed capabilities:
 | cap-012 | Persistent memory across sessions | ✅ done |
 | cap-013 | Structured task planning and decomposition | ✅ done |
 | cap-014 | File analysis — PDF, CSV, images, structured data | ✅ done |
-| cap-015 | API integration framework | ⬜ pending |
+| cap-015 | API integration framework | ✅ done |
 | cap-016 | Project scaffolding and code generation | ⬜ pending |
 
 *This list grows over time as Miguel generates and implements new capabilities.*
@@ -281,6 +283,7 @@ Miguel/
 │       ├── improvements.md        # Improvement log
 │       └── tools/
 │           ├── error_utils.py         # Safe tool decorator + atomic writes
+│           ├── api_tools.py           # HTTP client + API integrations
 │           ├── capability_tools.py    # Checklist management
 │           ├── self_tools.py          # Self-inspection + logging
 │           ├── prompt_tools.py        # Prompt self-modification
@@ -295,7 +298,7 @@ Miguel/
 
 ## Tools
 
-Miguel has 35+ tools across 11 categories, plus access to Python, shell, and filesystem tools from Agno.
+Miguel has 40+ tools across 12 categories, plus access to Python, shell, and filesystem tools from Agno.
 
 | Category | Tools | Description |
 |----------|-------|-------------|
@@ -306,6 +309,7 @@ Miguel has 35+ tools across 11 categories, plus access to Python, shell, and fil
 | **Error Recovery** | `recover_backup`, `list_recovery_points`, `validate_agent_file`, `health_check` | Diagnostics, backups, restoration |
 | **Dependencies** | `add_dependency`, `list_dependencies` | Install and track Python packages |
 | **Web Search** | `web_search`, `web_news`, `web_search_detailed` | Search the web via DuckDuckGo |
+| **API Integration** | `http_request`, `api_get`, `api_post`, `api_quickstart` | Call REST APIs with auth, headers, and pre-built integrations |
 | **Memory** | `remember`, `recall`, `forget`, `list_memories` | Persistent facts, preferences, context |
 | **Planning** | `create_plan`, `add_task`, `update_task`, `show_plan`, `list_plans`, `get_next_task`, `remove_plan` | Structured task decomposition |
 | **File Analysis** | `analyze_csv`, `analyze_pdf`, `analyze_image`, `csv_query` | PDF text extraction, data analysis, image metadata |
