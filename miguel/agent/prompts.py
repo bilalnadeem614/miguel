@@ -2,8 +2,6 @@
 
 from pathlib import Path
 
-from miguel.agent.config import USER_FILES_DIR
-
 AGENT_DIR = str(Path(__file__).parent.resolve())
 
 
@@ -87,9 +85,27 @@ def get_system_prompt() -> list[str]:
         "- Keep improvements incremental and testable",
         "",
         "## User Files",
-        f"Users can share files with you by placing them in: {USER_FILES_DIR}",
+        f"Users can share files with you by placing them in: {AGENT_DIR}",
         "You have a second LocalFileSystemTools instance scoped to this directory.",
         "You can read, write, and manipulate files there for users.",
         "This is separate from your agent code — user files do not affect your behavior.",
         "When a user asks you to work with their files, look in this directory first.",
+        "",
+        "## Web Search and Research",
+        "You have web search capabilities via DuckDuckGo. Use them proactively:",
+        "- `web_search(query, max_results)` — General web search. Use for facts, documentation, how-tos.",
+        "- `web_news(query, max_results)` — Search recent news articles. Use for current events.",
+        "- `web_search_detailed(query, region, max_results)` — Detailed search with region filtering and JSON output.",
+        "",
+        "When to search:",
+        "- When a user asks about recent events, current information, or things after your training cutoff.",
+        "- When you need to verify a fact or find a specific piece of information.",
+        "- When the user asks you to research a topic.",
+        "- When you're unsure about something and a search could help.",
+        "",
+        "Search tips:",
+        "- Use specific, focused queries rather than vague ones.",
+        "- Try rephrasing if the first search doesn't return useful results.",
+        "- Combine multiple searches for thorough research.",
+        "- Always cite your sources when presenting search results.",
     ]

@@ -18,10 +18,12 @@ agent/
     ├── __init__.py          # Empty — makes tools/ a Python package
     ├── error_utils.py       # Error handling foundation — decorators, safe writes, validation
     ├── capability_tools.py  # Tools for managing the capability checklist
+    ├── dep_tools.py         # Dependency management tools
     ├── prompt_tools.py      # Tools for safely inspecting and modifying the system prompt
     ├── recovery_tools.py    # Error recovery and diagnostic tools
     ├── self_tools.py        # Tools for self-inspection and logging improvements
-    └── tool_creator.py      # Tools for creating new tools and auto-registering them
+    ├── tool_creator.py      # Tools for creating new tools and auto-registering them
+    └── web_tools.py         # Web search and information retrieval via DuckDuckGo
 ```
 
 ## Key Components
@@ -30,7 +32,7 @@ agent/
 - `create_agent()` — Factory function that instantiates an `agno.agent.Agent`
 - Wires together: model, instructions, and all tools
 - External tools: `PythonTools` (run code), `ShellTools` (run commands), `LocalFileSystemTools` (read/write files)
-- Custom tools: capability management + self-inspection + prompt modification + tool creation + recovery
+- Custom tools: capability management + self-inspection + prompt modification + tool creation + recovery + web search
 
 ### prompts.py — The Brain
 - `get_system_prompt()` returns a list of instruction strings
@@ -98,6 +100,23 @@ agent/
   - Validates combined file syntax
   - Auto-registers new functions in core.py
 
+### tools/web_tools.py — Web Search & Research
+- `web_search(query, max_results)` — General web search via DuckDuckGo
+  - Returns formatted results with titles, URLs, and snippets
+  - Default 5 results, max 20
+- `web_news(query, max_results)` — Search recent news articles
+  - Returns results with titles, URLs, dates, sources, and snippets
+- `web_search_detailed(query, region, max_results)` — Detailed search with region filtering
+  - Returns structured JSON output for programmatic parsing
+  - Supports region codes: 'us-en', 'uk-en', 'de-de', 'fr-fr', etc.
+- All functions use `@safe_tool` decorator for graceful error handling
+- Uses lazy imports of `duckduckgo_search` to avoid startup overhead
+- Dependency: `duckduckgo-search` (PyPI)
+
+### tools/dep_tools.py — Dependency Management
+- `add_dependency(package_name)` — Install a Python package and record it
+- `list_dependencies()` — List current dependencies from pyproject.toml
+
 ## Data Flow
 1. User message → `create_agent()` builds Agent → Claude processes with system prompt
 2. Claude decides which tools to call → tools execute → results fed back
@@ -105,6 +124,7 @@ agent/
 4. For prompt modification: parse sections → modify → validate syntax → write → confirm
 5. For tool creation: write tool file → validate syntax → update core.py imports → register tools
 6. For error recovery: health_check → diagnose → recover_backup or fix manually
+7. For web search: user asks question → agent calls web_search/web_news → formats and presents results
 
 ## Error Handling Strategy
 - **Prevention:** All file-modifying tools validate syntax before writing

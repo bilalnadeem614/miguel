@@ -106,10 +106,10 @@
       "title": "Web search and information retrieval",
       "description": "Add web search capability (e.g. via DuckDuckGo, Tavily, or similar) so Miguel can look up current information, research topics, find documentation, and answer questions about recent events. This is the single biggest gap \u2014 without it, Miguel is limited to its training data.",
       "priority": 1,
-      "status": "unchecked",
+      "status": "checked",
       "category": "self-generated",
       "added_at": "2026-03-09T12:41:56.722373+00:00",
-      "completed_at": null
+      "completed_at": "2026-03-09T16:49:46.057849+00:00"
     },
     {
       "id": "cap-012",

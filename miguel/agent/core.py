@@ -41,6 +41,11 @@ from miguel.agent.tools.dep_tools import (
     add_dependency,
     list_dependencies,
 )
+from miguel.agent.tools.web_tools import (
+    web_search,
+    web_news,
+    web_search_detailed,
+)
 
 
 def create_agent(interactive: bool = False) -> Agent:
@@ -82,6 +87,9 @@ def create_agent(interactive: bool = False) -> Agent:
             health_check,
             add_dependency,
             list_dependencies,
+            web_search,
+            web_news,
+            web_search_detailed,
         ],
         markdown=True,
         **(
