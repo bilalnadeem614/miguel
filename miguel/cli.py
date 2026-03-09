@@ -70,7 +70,7 @@ def interactive_mode() -> None:
     try:
         from miguel.agent import create_agent
 
-        agent = create_agent()
+        agent = create_agent(interactive=True)
     except Exception as e:
         print_error(f"Failed to load agent: {e}")
         raise typer.Exit(1)
@@ -115,7 +115,7 @@ def interactive_mode() -> None:
                     del sys.modules[mod]
                 from miguel.agent import create_agent
 
-                agent = create_agent()
+                agent = create_agent(interactive=True)
                 print_success("Agent reloaded after improvements.")
             except Exception as e:
                 print_error(f"Failed to reload agent: {e}")

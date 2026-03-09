@@ -39,8 +39,13 @@ from miguel.agent.tools.recovery_tools import (
 )
 
 
-def create_agent() -> Agent:
-    """Create and return a configured Miguel agent instance."""
+def create_agent(interactive: bool = False) -> Agent:
+    """Create and return a configured Miguel agent instance.
+
+    Args:
+        interactive: If True, enable conversation history for chat sessions.
+                     If False (default), no history — used for improvement batches.
+    """
     return Agent(
         name="Miguel",
         model=Claude(
@@ -72,7 +77,13 @@ def create_agent() -> Agent:
             health_check,
         ],
         markdown=True,
-        db=SqliteDb(db_file=str(Path(__file__).parent / "miguel.db")),
-        add_history_to_context=True,
-        num_history_runs=20,
+        **(
+            {
+                "db": SqliteDb(db_file=str(Path(__file__).parent / "miguel.db")),
+                "add_history_to_context": True,
+                "num_history_runs": 20,
+            }
+            if interactive
+            else {}
+        ),
     )
