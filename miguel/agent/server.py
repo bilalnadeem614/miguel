@@ -2,6 +2,10 @@
 
 Runs inside the container. Exposes the agent via HTTP with SSE streaming,
 so the host-side CLI/runner can call agent.run() over the network.
+
+Architecture:
+- Batch mode (interactive=False): Uses plain Agent for focused improvement tasks
+- Interactive mode (interactive=True): Uses Team with sub-agent delegation
 """
 
 import importlib
@@ -14,8 +18,8 @@ from pydantic import BaseModel
 
 app = FastAPI(title="Miguel Agent Server")
 
-_agent = None
-_interactive_agent = None
+_agent = None           # Plain Agent for batch mode
+_interactive_team = None # Team for interactive mode
 
 
 class RunRequest(BaseModel):
@@ -25,8 +29,8 @@ class RunRequest(BaseModel):
 
 
 def _create_agents():
-    """Clear cached modules and create fresh agent instances."""
-    global _agent, _interactive_agent
+    """Clear cached modules and create fresh agent/team instances."""
+    global _agent, _interactive_team
 
     modules_to_clear = [k for k in sys.modules if k.startswith("miguel.agent") and k != "miguel.agent.server"]
     for mod in modules_to_clear:
@@ -35,8 +39,10 @@ def _create_agents():
     import miguel.agent.core
     importlib.reload(miguel.agent.core)
 
+    # Batch mode: plain Agent (simpler, faster, less overhead)
     _agent = miguel.agent.core.create_agent(interactive=False)
-    _interactive_agent = miguel.agent.core.create_agent(interactive=True)
+    # Interactive mode: Team with sub-agent delegation
+    _interactive_team = miguel.agent.core.create_team(interactive=True)
 
 
 @app.on_event("startup")
@@ -57,13 +63,14 @@ def reload_agent():
 
 @app.post("/run")
 def run(req: RunRequest):
-    agent = _interactive_agent if req.interactive else _agent
+    # Use Team for interactive, plain Agent for batch
+    runner = _interactive_team if req.interactive else _agent
 
     kwargs = dict(stream=True, stream_events=True)
     if req.session_id:
         kwargs["session_id"] = req.session_id
 
-    stream = agent.run(req.prompt, **kwargs)
+    stream = runner.run(req.prompt, **kwargs)
 
     def generate():
         for event in stream:
