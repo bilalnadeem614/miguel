@@ -139,3 +139,25 @@ Before/after metrics: core.py 204→214 lines (+10), prompts.py 251→270 lines 
 
 Before/after: Total codebase 5131→4619 lines (-512, -10%). Prompt 270→100 lines (-170, -63%). No functionality removed — all 52 tools and 14 tool modules preserved. All files pass syntax validation. Full integration test (agent creation, team creation, all imports) passes.
 **Files changed:** prompts.py, config.py, tools/error_utils.py, tools/tool_creator.py, tools/capability_tools.py, tools/context_tools.py, architecture.md, README.md
+
+### 2026-03-10 11:57:35 UTC
+**Summary:** Batch #1: Implemented cap-022 (Webpage content extraction and reading). Added `web_read` tool that fetches any URL and extracts clean, readable text content.
+
+**What was built:**
+- `web_read(url, max_chars=15000)` — fetches a URL, parses HTML with BeautifulSoup, removes noise elements (scripts, styles, nav, footer, ads, popups), finds the main content area (article/main tags), extracts clean text, and returns it with title, word count, description, and key links.
+- Handles HTML pages (with smart content extraction), JSON/XML/text responses (raw passthrough), non-text content types (clear error), HTTP errors, timeouts, and encoding issues.
+- Smart truncation at paragraph boundaries with "how to get more" hints.
+- Added to both coordinator (core.py) and Researcher sub-agent (team.py).
+
+**Why this matters:** This was Miguel's single biggest capability gap. Web search returns snippets, but users need full page content for research, documentation reading, article analysis, etc. Now the workflow is: `web_search` → find URLs → `web_read` → get full content.
+
+**New dependency:** beautifulsoup4 (HTML parsing).
+
+**Before/after metrics:**
+- core.py: 213→214 lines (+1, just the import addition)
+- prompts.py: 99 lines (unchanged)
+- web_tools.py: 106→292 lines (+186, the new tool + helper)
+- team.py: 131→147 lines (+16, added web_read to Researcher)
+- Tool count: 52→53 coordinator tools, Researcher 7→8 tools
+- Capabilities: 21/21→21/23 checked (added 3 new, completed 1)
+**Files changed:** tools/web_tools.py, core.py, team.py, README.md

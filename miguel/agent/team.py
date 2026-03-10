@@ -70,9 +70,9 @@ def create_researcher_agent() -> Agent:
     """Sub-agent specialized in web research and information gathering.
 
     Handles: web searches, news lookup, API calls, fact-checking,
-    and synthesizing information from multiple sources.
+    reading webpage content, and synthesizing information from multiple sources.
     """
-    from miguel.agent.tools.web_tools import web_search, web_news, web_search_detailed
+    from miguel.agent.tools.web_tools import web_search, web_news, web_search_detailed, web_read
     from miguel.agent.tools.api_tools import http_request, api_get, api_post, api_quickstart
 
     return Agent(
@@ -80,14 +80,15 @@ def create_researcher_agent() -> Agent:
         role="Web research, information retrieval, and API integration specialist",
         description=(
             "Delegate to Researcher when the task involves searching the web, "
-            "looking up current information, researching topics, calling external APIs, "
-            "fact-checking, or gathering data from multiple online sources. Researcher "
-            "has web search and HTTP client tools."
+            "looking up current information, researching topics, reading webpage content, "
+            "calling external APIs, fact-checking, or gathering data from multiple online "
+            "sources. Researcher has web search, page reading, and HTTP client tools."
         ),
         model=_make_model(),
         instructions=[
             "You are Researcher, a sub-agent of Miguel specialized in finding information.",
             "Use web search for general queries, news search for current events.",
+            "Use web_read to fetch and read full webpage content after finding URLs via search.",
             "Use API tools for structured data from web services.",
             "Always cite sources. Synthesize information clearly.",
             "Return organized, well-structured findings to the coordinator.",
@@ -97,6 +98,7 @@ def create_researcher_agent() -> Agent:
             web_search,
             web_news,
             web_search_detailed,
+            web_read,
             http_request,
             api_get,
             api_post,

@@ -58,6 +58,7 @@ from miguel.agent.tools.web_tools import (
     web_search,
     web_news,
     web_search_detailed,
+    web_read,
 )
 from miguel.agent.tools.memory_tools import (
     remember,
@@ -116,8 +117,8 @@ COORDINATOR_TOOLS = [
     recover_backup, list_recovery_points, validate_agent_file, health_check,
     # Dependencies
     add_dependency, list_dependencies,
-    # Web search (coordinator keeps these for quick lookups)
-    web_search, web_news, web_search_detailed,
+    # Web search & content reading
+    web_search, web_news, web_search_detailed, web_read,
     # Memory (coordinator-only — persistent state)
     remember, recall, forget, list_memories,
     # Planning (coordinator-only — orchestration)

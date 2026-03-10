@@ -200,6 +200,36 @@
       "category": "self-generated",
       "added_at": "2026-03-10T11:28:23.244610+00:00",
       "completed_at": "2026-03-10T11:48:00.543517+00:00"
+    },
+    {
+      "id": "cap-022",
+      "title": "Webpage content extraction and reading",
+      "description": "Miguel can search the web but cannot read the actual content of webpages. Add a tool that fetches a URL and extracts the readable text content (stripping HTML/JS/CSS). This is critical for research tasks \u2014 search gives snippets, but users often need full articles, documentation pages, or reference material. Implementation should handle common content types, respect robots.txt etiquette with proper User-Agent, extract main content (not nav/footer noise), and handle encoding gracefully. Should work with articles, docs, Stack Overflow answers, GitHub READMEs, etc. This is the single biggest gap in Miguel's research capability.",
+      "priority": 1,
+      "status": "checked",
+      "category": "self-generated",
+      "added_at": "2026-03-10T11:53:36.494283+00:00",
+      "completed_at": "2026-03-10T11:56:36.198528+00:00"
+    },
+    {
+      "id": "cap-023",
+      "title": "Automated code testing and validation",
+      "description": "Beyond syntax checking, Miguel should be able to run tests against code it writes. Add a structured testing tool that can: (1) Run pytest on a file or directory, (2) Execute a code snippet and compare output to expected output, (3) Run Miguel's own codebase tests to verify changes don't break things. This improves code quality and catches bugs before they ship. Should integrate with the existing validation pipeline and be usable by the Coder sub-agent.",
+      "priority": 2,
+      "status": "unchecked",
+      "category": "self-generated",
+      "added_at": "2026-03-10T11:53:36.498253+00:00",
+      "completed_at": null
+    },
+    {
+      "id": "cap-024",
+      "title": "Smart conversation starters with memory recall",
+      "description": "When starting a new conversation in interactive mode, Miguel should automatically recall relevant memories (user preferences, ongoing projects, recent context) and weave them into its awareness. Add a startup routine that runs on conversation init: recalls recent memories, checks for any active plans, and loads user preferences. This makes Miguel feel continuous rather than amnesiac. Implementation: add a startup_context() function that the prompt references, so Miguel knows to call recall/list_plans at conversation start.",
+      "priority": 3,
+      "status": "unchecked",
+      "category": "self-generated",
+      "added_at": "2026-03-10T11:53:36.499966+00:00",
+      "completed_at": null
     }
   ]
 }
