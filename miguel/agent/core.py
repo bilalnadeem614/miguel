@@ -90,6 +90,14 @@ from miguel.agent.tools.context_tools import (
     check_context,
     auto_compact,
 )
+from miguel.agent.tools.reddit_tools import (
+    reddit_browse,
+    reddit_read,
+    reddit_search,
+    reddit_post,
+    reddit_comment,
+    reddit_user,
+)
 
 
 # --- Coordinator tools: everything the main Miguel agent can use directly ---
@@ -120,6 +128,8 @@ COORDINATOR_TOOLS = [
     http_request, api_get, api_post, api_quickstart,
     # Context awareness (coordinator-only — monitors context usage)
     check_context, auto_compact,
+    # Reddit integration (browse, post, comment, search)
+    reddit_browse, reddit_read, reddit_search, reddit_post, reddit_comment, reddit_user,
 ]
 
 

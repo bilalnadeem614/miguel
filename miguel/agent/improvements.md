@@ -85,3 +85,35 @@ Updated `README.md`: Updated tool count (44→46), added cap-019 to capabilities
 
 Before/after metrics: core.py 198→204 lines (+6), prompts.py 235→252 lines (+17), new file tools/context_tools.py 176 lines. Total: +199 lines of new functionality.
 **Files changed:** tools/context_tools.py, core.py, prompts.py, architecture.md, README.md
+
+### 2026-03-10 11:39:38 UTC
+**Summary:** Batch #2: Implemented cap-020 (Reddit integration — browse, post, and interact). Created `tools/reddit_tools.py` with 6 new tools:
+
+1. **`reddit_browse(subreddit, sort, limit)`** — Browse posts in a subreddit with sort options (hot/new/top/rising), returns formatted post listings with scores, comment counts, and links.
+
+2. **`reddit_read(post_url_or_id, comment_limit)`** — Read a full post with body text and top comments (with one level of reply nesting). Accepts URLs, fullnames (t3_xxx), or bare IDs.
+
+3. **`reddit_search(query, subreddit, sort, limit)`** — Search all of Reddit or a specific subreddit with sort options (relevance/hot/top/new/comments).
+
+4. **`reddit_post(subreddit, title, body, url, flair_id)`** — Submit text or link posts to any subreddit.
+
+5. **`reddit_comment(thing_id, body)`** — Reply to posts (t3_) or comments (t1_) with Reddit markdown support.
+
+6. **`reddit_user(username)`** — Get user profile info including karma, account age, verification status.
+
+Design decisions:
+- Uses Reddit's OAuth2 API directly via `urllib.request` — no PRAW dependency needed
+- Credentials from environment variables (REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USERNAME, REDDIT_PASSWORD)
+- Token caching with automatic refresh (tokens valid for ~1 hour)
+- Graceful error messages when credentials are missing with setup instructions
+- All tools wrapped with `@safe_tool` for consistent error handling
+- Post/comment formatting with scores, authors, links, and body text truncation
+- Prompt instructions include "always confirm with user before posting" safety rule
+
+Updated `core.py`: Added 6 Reddit tool imports and registration in COORDINATOR_TOOLS.
+Updated `prompts.py`: Added new "Reddit Integration" section with tool docs and usage guidelines.
+Updated `architecture.md`: Added reddit_tools.py to directory tree, updated tool count to 52, documented Reddit tools architecture.
+Updated `README.md`: Updated tool count (46→52), added cap-020 as ✅ done, added Reddit row to tools table, added Reddit setup instructions, updated feature lists and architecture diagrams.
+
+Before/after metrics: core.py 204→214 lines (+10), prompts.py 251→270 lines (+19), new file tools/reddit_tools.py 410 lines. Total: +439 lines of new functionality. No new dependencies added — uses only stdlib urllib.request.
+**Files changed:** tools/reddit_tools.py, core.py, prompts.py, architecture.md, README.md

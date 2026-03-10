@@ -34,6 +34,7 @@ agent/
     ├── planning_tools.py        # Structured task planning — plans, tasks, dependencies, progress
     ├── prompt_tools.py          # Tools for safely inspecting and modifying the system prompt
     ├── recovery_tools.py        # Error recovery and diagnostic tools
+    ├── reddit_tools.py          # Reddit integration — browse, post, comment, search via OAuth2
     ├── self_tools.py            # Tools for self-inspection and logging improvements
     ├── tool_creator.py          # Tools for creating new tools and auto-registering them
     └── web_tools.py             # Web search and information retrieval via DuckDuckGo
@@ -46,9 +47,9 @@ agent/
 │                  Miguel (Coordinator)                │
 │              Agno Team — coordinate mode             │
 │                                                      │
-│  Tools: 46 (self-improvement, memory, planning,      │
+│  Tools: 52 (self-improvement, memory, planning,      │
 │         web search, file analysis, API, context,      │
-│         filesystem)                                   │
+│         Reddit, filesystem)                           │
 │                                                      │
 │  Decides: handle directly OR delegate to sub-agent    │
 ├──────────┬──────────────────┬────────────────────────┤
@@ -92,7 +93,7 @@ Additionally, the coordinator can **monitor its own context usage** via `check_c
 ### core.py — The Heart
 - `create_agent()` — Factory for a plain `Agent` (used in batch mode for self-improvement)
 - `create_team()` — Factory for the `Team` with coordinator + 3 sub-agents (used in interactive mode)
-- Both share the same `COORDINATOR_TOOLS` list (46 tools)
+- Both share the same `COORDINATOR_TOOLS` list (52 tools)
 - Wires together: model, instructions, tools, sub-agents, and history/DB configuration
 
 ### team.py — Sub-Agent Definitions
@@ -116,6 +117,7 @@ Additionally, the coordinator can **monitor its own context usage** via `check_c
 - Includes context-aware execution strategy — rules for managing cognitive capacity
 - Includes context window awareness instructions — when/how to check and compact
 - Includes delegation framework with complexity tiers and decision criteria
+- Includes Reddit integration instructions — when/how to use Reddit tools
 - This file is the primary target for self-improvement
 - Can be safely modified using the prompt_tools
 
@@ -161,6 +163,17 @@ Additionally, the coordinator can **monitor its own context usage** via `check_c
 - Uses character-based token estimation (~3.5 chars/token) with model-specific limits
 - Three thresholds: comfortable (<60%), warning (60-80%), critical (>80%)
 
+### tools/reddit_tools.py — Reddit Integration
+- `reddit_browse(subreddit, sort, limit)` — Browse posts in a subreddit (hot/new/top/rising)
+- `reddit_read(post_url_or_id, comment_limit)` — Read a post and its top comments
+- `reddit_search(query, subreddit, sort, limit)` — Search Reddit or a specific subreddit
+- `reddit_post(subreddit, title, body, url, flair_id)` — Submit text or link posts
+- `reddit_comment(thing_id, body)` — Reply to posts (t3_) or comments (t1_)
+- `reddit_user(username)` — Get user profile info (karma, account age, etc.)
+- Uses Reddit's OAuth2 API directly (no PRAW dependency) via `urllib.request`
+- Credentials via environment variables: REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USERNAME, REDDIT_PASSWORD
+- Token caching with automatic refresh; graceful error messages when credentials missing
+
 ### tools/memory_tools.py — Persistent Memory
 - `remember()` / `recall()` / `forget()` / `list_memories()`
 - Data stored in `memory.db` (SQLite)
@@ -205,6 +218,7 @@ Additionally, the coordinator can **monitor its own context usage** via `check_c
 13. For file analysis: analyze_csv/pdf/image → rich output → csv_query for follow-up
 14. For API calls: http_request or api_quickstart → auto-parsed responses
 15. For context monitoring: check_context periodically → auto_compact when critical → recall to recover
+16. For Reddit: reddit_browse/search/read for reading → reddit_post/comment for writing (with user confirmation)
 
 ## Error Handling Strategy
 - **Prevention:** All file-modifying tools validate syntax before writing
@@ -222,4 +236,5 @@ Additionally, the coordinator can **monitor its own context usage** via `check_c
 - `modify_prompt_section` validates syntax before writing
 - `create_tool` validates syntax and docstrings, validates core.py after modification
 - `csv_query` uses restricted namespace for eval safety
+- Reddit tools require explicit credentials; posting/commenting actions are clearly flagged
 - System prompt forbids modifying files outside agent/

@@ -186,10 +186,10 @@
       "title": "Reddit integration \u2014 browse, post, and interact",
       "description": "Add the ability to access Reddit and make posts on it. Miguel should be able to: (1) Browse and read subreddits and threads, (2) Post to specific subreddits when the user asks or when Miguel deems it useful, (3) Comment on existing threads, (4) Search Reddit for relevant discussions. This requires Reddit API integration via PRAW (Python Reddit API Wrapper) or Reddit's HTTP API with OAuth2 authentication. The user will need to provide Reddit API credentials (client_id, client_secret, username, password) which should be stored securely. Create tools like: reddit_browse(subreddit), reddit_post(subreddit, title, body), reddit_comment(thread_id, body), reddit_search(query). Include rate limiting and content formatting for Reddit's markdown.",
       "priority": 2,
-      "status": "unchecked",
+      "status": "checked",
       "category": "self-generated",
       "added_at": "2026-03-10T11:28:23.241953+00:00",
-      "completed_at": null
+      "completed_at": "2026-03-10T11:39:19.810603+00:00"
     },
     {
       "id": "cap-021",
