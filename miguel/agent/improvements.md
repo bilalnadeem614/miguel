@@ -61,3 +61,27 @@ Updated architecture.md with context-aware execution strategy documentation, com
 
 Before/after metrics: prompts.py 197→224 lines (+27 net), 44 tools (unchanged — this is a prompt/judgment improvement, not a tool addition). The +27 lines encode decision-making judgment that should make future batches more efficient by preventing context exhaustion.
 **Files changed:** prompts.py, architecture.md, README.md
+
+### 2026-03-10 11:35:06 UTC
+**Summary:** Batch #1: Implemented cap-019 (Context window awareness and auto-compaction). Created `tools/context_tools.py` with two new tools:
+
+1. **`check_context(conversation_chars, model_id)`** — Estimates context window usage based on character count (3.5 chars/token heuristic). Returns a traffic-light status report:
+   - ✅ COMFORTABLE (<60%): continue normally
+   - ⚠️ WARNING (60-80%): delegate heavy work, be concise, use memory
+   - 🔴 CRITICAL (>80%): auto-compact immediately, delegate or finish primary work
+
+2. **`auto_compact(task_description, progress_summary, remaining_work, key_decisions)`** — Saves structured task state to persistent memory (via memory.db) for seamless recovery. Produces a compact snapshot that can be recalled in a new conversation with `recall('compacted_state', category='context')`.
+
+Design decisions:
+- Character-based token estimation (3.5 chars/token) — conservative for mixed content (code + natural language)
+- 15k token system overhead deducted from 200k model limit = 185k effective tokens
+- Uses existing memory.db infrastructure (no new dependencies)
+- Both tools wrapped with `@safe_tool` for error handling
+
+Updated `core.py`: Added import for `check_context` and `auto_compact`, added them to `COORDINATOR_TOOLS` list.
+Updated `prompts.py`: Added new "Context Window Awareness" section (14 lines) with usage instructions, char estimation guide, threshold behaviors, and recovery instructions.
+Updated `architecture.md`: Added context_tools.py to directory tree, updated tool count to 46, documented the context awareness tools and their role in the error handling strategy.
+Updated `README.md`: Updated tool count (44→46), added cap-019 to capabilities table as ✅ done, added "Context Awareness" row to tools table, updated architecture diagrams, added context monitoring to feature lists.
+
+Before/after metrics: core.py 198→204 lines (+6), prompts.py 235→252 lines (+17), new file tools/context_tools.py 176 lines. Total: +199 lines of new functionality.
+**Files changed:** tools/context_tools.py, core.py, prompts.py, architecture.md, README.md

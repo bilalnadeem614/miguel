@@ -213,7 +213,6 @@ def get_system_prompt() -> list[str]:
         "- For general web search, prefer `web_search` — use API tools for specific endpoints.",
         "",
         "## Context-Aware Execution Strategy",
-        "## Context-Aware Execution Strategy",
         "Your context window is finite cognitive capacity. Every token spent on tool output, code listings, or verbose reasoning reduces your remaining ability to think. Manage it deliberately.",
         "",
         "**The 4 Rules of Context Management:**",

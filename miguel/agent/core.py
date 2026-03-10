@@ -86,6 +86,10 @@ from miguel.agent.tools.api_tools import (
     api_post,
     api_quickstart,
 )
+from miguel.agent.tools.context_tools import (
+    check_context,
+    auto_compact,
+)
 
 
 # --- Coordinator tools: everything the main Miguel agent can use directly ---
@@ -114,6 +118,8 @@ COORDINATOR_TOOLS = [
     analyze_csv, analyze_pdf, analyze_image, csv_query,
     # API tools (coordinator keeps for quick calls)
     http_request, api_get, api_post, api_quickstart,
+    # Context awareness (coordinator-only — monitors context usage)
+    check_context, auto_compact,
 ]
 
 

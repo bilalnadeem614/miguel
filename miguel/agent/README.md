@@ -12,9 +12,9 @@
 
 Miguel is an AI agent that can rewrite itself. Not just generate code for you — it modifies *its own* source code, creates new tools, rewrites its own system prompts, and generates new capabilities it didn't start with.
 
-It began with 10 seed capabilities. It completed all 10, then autonomously generated 8 more and has already implemented 7 of them. Every improvement is validated (syntax, imports, schema), committed to git, and pushed to this repo. If validation fails, the batch is rolled back automatically. The agent literally cannot corrupt itself.
+It began with 10 seed capabilities. It completed all 10, then autonomously generated 8 more and has already implemented all 8. Every improvement is validated (syntax, imports, schema), committed to git, and pushed to this repo. If validation fails, the batch is rolled back automatically. The agent literally cannot corrupt itself.
 
-**Architecture: Agno Team with context-aware delegation.** Miguel evolved from a single agent into a coordinator that delegates to specialized sub-agents (Coder, Researcher, Analyst), each getting fresh context windows. The coordinator treats its context window as finite cognitive capacity — it plans before executing complex tasks, delegates heavy work to sub-agents, and uses persistent memory as external storage to bridge across delegated calls.
+**Architecture: Agno Team with context-aware delegation.** Miguel evolved from a single agent into a coordinator that delegates to specialized sub-agents (Coder, Researcher, Analyst), each getting fresh context windows. The coordinator treats its context window as finite cognitive capacity — it monitors context usage in real-time, plans before executing complex tasks, delegates heavy work to sub-agents, uses persistent memory as external storage, and auto-compacts state when context runs low.
 
 This is a **living repository**. Miguel auto-commits and pushes after each successful improvement. The code you see today will be different tomorrow as Miguel continues to evolve. Star or watch this repo to follow along.
 
@@ -43,6 +43,7 @@ Miguel: I'm a self-improving AI agent running as a team with
   - Answer questions, search the web, call APIs
   - Remember facts and preferences across sessions
   - Break complex tasks into structured plans
+  - Monitor my own context usage and save state when running low
   - Improve myself — add new tools, rewrite my own prompts
 
   Via sub-agents (delegated with fresh context):
@@ -82,6 +83,7 @@ Batch 1 succeeded: Added web search via DuckDuckGo
 - **Interactive REPL** — Chat with slash commands (`/help`, `/capabilities`, `/improve`, `/history`)
 - **Team architecture** — Coordinator + 3 specialized sub-agents (Coder, Researcher, Analyst)
 - **Context-aware execution** — Assesses task complexity and chooses optimal strategy (direct, delegated, or fully orchestrated)
+- **Context window monitoring** — Tracks context usage, warns when running low, auto-saves state for seamless recovery
 - **Web search** — Search the web and news via DuckDuckGo, with region filtering
 - **API integration** — Call any REST API with configurable auth, headers, and body; 10 pre-built free API integrations
 - **Persistent memory** — Remembers facts, preferences, and context across sessions (SQLite-backed)
@@ -98,7 +100,7 @@ Batch 1 succeeded: Added web search via DuckDuckGo
 - **Capability checklist** — Starts with seeds, completes them, then generates new ones autonomously
 - **Tool creation** — Writes new tool files and auto-registers them into its own configuration
 - **Prompt rewriting** — Safely modifies its own system instructions with syntax validation
-- **Context-aware batches** — Prioritizes primary implementation over documentation; delegates heavy code gen to sub-agents
+- **Context-aware batches** — Monitors context usage, prioritizes primary implementation, delegates heavy code gen to sub-agents, auto-compacts state when running low
 - **Self-describing architecture** — Maintains a map of its own codebase that it updates after changes
 - **Dependency management** — Can install Python packages it needs and record them for persistence
 - **Error recovery** — Automatic backups, health checks, and backup restoration
@@ -176,7 +178,7 @@ HOST (your machine)                           DOCKER CONTAINER (sandboxed)
 │  Validation checks                   │◄────►│  ├── Coder sub-agent         │
 │  Terminal display                    │      │  ├── Researcher sub-agent    │
 │                                      │      │  ├── Analyst sub-agent       │
-│                                      │      │  └── 44 tools                │
+│                                      │      │  └── 46 tools                │
 └──────────────────────────────────────┘      └──────────────────────────────┘
 ```
 
@@ -187,10 +189,12 @@ HOST (your machine)                           DOCKER CONTAINER (sandboxed)
 │                  Miguel (Coordinator)                │
 │              Agno Team — coordinate mode             │
 │                                                      │
-│  44 tools: self-improvement, memory, planning,       │
-│            web search, file analysis, API, filesystem │
+│  46 tools: self-improvement, memory, planning,       │
+│            web search, file analysis, API, context,   │
+│            filesystem                                 │
 │                                                      │
 │  Strategy: assess complexity → plan → delegate/do    │
+│  Context: check_context() → auto_compact() on low    │
 ├──────────┬──────────────────┬────────────────────────┤
 │          │                  │                        │
 │  ┌───────▼──────┐  ┌───────▼──────┐  ┌─────────────▼─┐
@@ -291,9 +295,11 @@ These were created by Miguel itself after completing all seed capabilities:
 | cap-013 | Structured task planning and decomposition | ✅ done |
 | cap-014 | File analysis — PDF, CSV, images, structured data | ✅ done |
 | cap-015 | API integration framework | ✅ done |
-| cap-016 | Project scaffolding and code generation | ⬜ pending |
 | cap-017 | Evolve into Agno Team with sub-agent delegation | ✅ done |
 | cap-018 | Context-aware execution strategy | ✅ done |
+| cap-019 | Context window awareness and auto-compaction | ✅ done |
+| cap-020 | Reddit integration — browse, post, and interact | ⬜ pending |
+| cap-021 | Architecture consolidation and cleanup | ⬜ pending |
 
 *This list grows over time as Miguel generates and implements new capabilities.*
 
@@ -329,6 +335,7 @@ Miguel/
 │           ├── error_utils.py         # Safe tool decorator + atomic writes
 │           ├── api_tools.py           # HTTP client + API integrations
 │           ├── capability_tools.py    # Checklist management
+│           ├── context_tools.py       # Context window monitoring + auto-compaction
 │           ├── self_tools.py          # Self-inspection + logging
 │           ├── prompt_tools.py        # Prompt self-modification
 │           ├── tool_creator.py        # Tool creation + auto-registration
@@ -342,7 +349,7 @@ Miguel/
 
 ## Tools
 
-Miguel has 44 coordinator tools across 12 categories, plus 3 specialized sub-agents.
+Miguel has 46 coordinator tools across 13 categories, plus 3 specialized sub-agents.
 
 | Category | Tools | Description |
 |----------|-------|-------------|
@@ -357,6 +364,7 @@ Miguel has 44 coordinator tools across 12 categories, plus 3 specialized sub-age
 | **Memory** | `remember`, `recall`, `forget`, `list_memories` | Persistent facts, preferences, context |
 | **Planning** | `create_plan`, `add_task`, `update_task`, `show_plan`, `list_plans`, `get_next_task`, `remove_plan` | Structured task decomposition |
 | **File Analysis** | `analyze_csv`, `analyze_pdf`, `analyze_image`, `csv_query` | PDF text extraction, data analysis, image metadata |
+| **Context Awareness** | `check_context`, `auto_compact` | Monitor context window usage, save state when running low |
 | **Built-in (Agno)** | `PythonTools`, `ShellTools`, `LocalFileSystemTools` | Execute code, run commands, file I/O |
 
 ## This Is a Living Project

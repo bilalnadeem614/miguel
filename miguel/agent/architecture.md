@@ -5,7 +5,7 @@ Miguel is a self-improving AI agent built on the **Agno** framework with **Claud
 
 **Architecture: Agno Team in `coordinate` mode** — Miguel operates as a coordinator with three specialized sub-agents. The coordinator handles orchestration, planning, memory, and self-improvement directly, and delegates focused tasks (coding, research, data analysis) to sub-agents that get fresh context windows.
 
-**Execution strategy: Context-aware.** Miguel treats its context window as finite cognitive capacity and manages it deliberately — delegating heavy work to sub-agents, using persistent memory as external storage, and planning before executing complex tasks.
+**Execution strategy: Context-aware.** Miguel treats its context window as finite cognitive capacity and manages it deliberately — delegating heavy work to sub-agents, using persistent memory as external storage, monitoring context usage with built-in tools, and planning before executing complex tasks.
 
 ## Directory Structure
 
@@ -27,6 +27,7 @@ agent/
     ├── error_utils.py           # Error handling foundation — decorators, safe writes, validation
     ├── api_tools.py             # HTTP client and API integrations — REST calls, auth, quickstart services
     ├── capability_tools.py      # Tools for managing the capability checklist
+    ├── context_tools.py         # Context window monitoring and auto-compaction
     ├── dep_tools.py             # Dependency management tools
     ├── file_analysis_tools.py   # File analysis — PDF, CSV/Excel, images, structured data
     ├── memory_tools.py          # Persistent memory — store/recall facts, preferences, context
@@ -45,8 +46,9 @@ agent/
 │                  Miguel (Coordinator)                │
 │              Agno Team — coordinate mode             │
 │                                                      │
-│  Tools: 44 (self-improvement, memory, planning,      │
-│         web search, file analysis, API, filesystem)   │
+│  Tools: 46 (self-improvement, memory, planning,      │
+│         web search, file analysis, API, context,      │
+│         filesystem)                                   │
 │                                                      │
 │  Decides: handle directly OR delegate to sub-agent    │
 ├──────────┬──────────────────┬────────────────────────┤
@@ -77,6 +79,8 @@ The coordinator follows 4 rules for context management:
 3. **Memory as external storage** — `remember()` intermediate results instead of holding in context
 4. **Plan before executing** — `create_plan()` for anything with >3 steps
 
+Additionally, the coordinator can **monitor its own context usage** via `check_context()` and **save state for recovery** via `auto_compact()` when running low. This prevents context exhaustion on long, complex tasks.
+
 **Complexity tiers:**
 - Simple (1-2 tool calls): Handle directly
 - Medium (3-5 tool calls): Handle directly, be efficient
@@ -88,7 +92,7 @@ The coordinator follows 4 rules for context management:
 ### core.py — The Heart
 - `create_agent()` — Factory for a plain `Agent` (used in batch mode for self-improvement)
 - `create_team()` — Factory for the `Team` with coordinator + 3 sub-agents (used in interactive mode)
-- Both share the same `COORDINATOR_TOOLS` list (44 tools)
+- Both share the same `COORDINATOR_TOOLS` list (46 tools)
 - Wires together: model, instructions, tools, sub-agents, and history/DB configuration
 
 ### team.py — Sub-Agent Definitions
@@ -110,6 +114,7 @@ The coordinator follows 4 rules for context management:
 - `get_system_prompt()` returns a list of instruction strings
 - Defines Miguel's identity, behavior rules, and improvement process
 - Includes context-aware execution strategy — rules for managing cognitive capacity
+- Includes context window awareness instructions — when/how to check and compact
 - Includes delegation framework with complexity tiers and decision criteria
 - This file is the primary target for self-improvement
 - Can be safely modified using the prompt_tools
@@ -149,6 +154,12 @@ The coordinator follows 4 rules for context management:
 ### tools/tool_creator.py — Tool Factory
 - `create_tool()` — Create new tool file + auto-register in core.py
 - `add_functions_to_tool()` — Extend existing tool files
+
+### tools/context_tools.py — Context Window Awareness
+- `check_context(conversation_chars, model_id)` — Estimate context usage with traffic-light status (comfortable/warning/critical) and actionable recommendations
+- `auto_compact(task_description, progress_summary, remaining_work, key_decisions)` — Save structured task state to persistent memory for seamless recovery
+- Uses character-based token estimation (~3.5 chars/token) with model-specific limits
+- Three thresholds: comfortable (<60%), warning (60-80%), critical (>80%)
 
 ### tools/memory_tools.py — Persistent Memory
 - `remember()` / `recall()` / `forget()` / `list_memories()`
@@ -193,6 +204,7 @@ The coordinator follows 4 rules for context management:
 12. For planning: create_plan → add tasks → work through → update_task cascades
 13. For file analysis: analyze_csv/pdf/image → rich output → csv_query for follow-up
 14. For API calls: http_request or api_quickstart → auto-parsed responses
+15. For context monitoring: check_context periodically → auto_compact when critical → recall to recover
 
 ## Error Handling Strategy
 - **Prevention:** All file-modifying tools validate syntax before writing
@@ -200,6 +212,7 @@ The coordinator follows 4 rules for context management:
 - **Atomic writes:** temp file + rename pattern prevents partial writes
 - **Safe decorator:** `@safe_tool` catches all exceptions, returns usable error messages
 - **Recovery:** `recover_backup()` restores files; `health_check()` diagnoses full codebase
+- **Context:** `check_context()` monitors usage; `auto_compact()` saves state before exhaustion
 - **Security:** Path validation ensures all operations stay within agent/
 
 ## Security Boundaries
