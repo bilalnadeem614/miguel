@@ -12,13 +12,13 @@
 
 Miguel is an AI agent that can rewrite itself. Not just generate code for you — it modifies *its own* source code, creates new tools, rewrites its own system prompts, and generates new capabilities it didn't start with.
 
-It began with 10 seed capabilities. It completed all 10, then autonomously generated 8 more and has already implemented all 8. Every improvement is validated (syntax, imports, schema), committed to git, and pushed to this repo. If validation fails, the batch is rolled back automatically. The agent literally cannot corrupt itself.
+It began with 10 seed capabilities. It completed all 10, then autonomously generated 9 more and has already implemented all 9. Every improvement is validated (syntax, imports, schema), committed to git, and pushed to this repo. If validation fails, the batch is rolled back automatically. The agent literally cannot corrupt itself.
 
 **Architecture: Agno Team with context-aware delegation.** Miguel evolved from a single agent into a coordinator that delegates to specialized sub-agents (Coder, Researcher, Analyst), each getting fresh context windows. The coordinator treats its context window as finite cognitive capacity — it monitors context usage in real-time, plans before executing complex tasks, delegates heavy work to sub-agents, uses persistent memory as external storage, and auto-compacts state when context runs low.
 
 This is a **living repository**. Miguel auto-commits and pushes after each successful improvement. The code you see today will be different tomorrow as Miguel continues to evolve. Star or watch this repo to follow along.
 
-Beyond self-improvement, Miguel is also a fully interactive AI assistant — chat with it, have it search the web, call APIs, remember things across sessions, plan multi-step projects, analyze your files, or work with your data.
+Beyond self-improvement, Miguel is also a fully interactive AI assistant — chat with it, have it search the web, browse Reddit, call APIs, remember things across sessions, plan multi-step projects, analyze your files, or work with your data.
 
 ## What It Looks Like
 
@@ -41,6 +41,7 @@ Miguel: I'm a self-improving AI agent running as a team with
 
   Directly:
   - Answer questions, search the web, call APIs
+  - Browse and interact with Reddit
   - Remember facts and preferences across sessions
   - Break complex tasks into structured plans
   - Monitor my own context usage and save state when running low
@@ -85,6 +86,7 @@ Batch 1 succeeded: Added web search via DuckDuckGo
 - **Context-aware execution** — Assesses task complexity and chooses optimal strategy (direct, delegated, or fully orchestrated)
 - **Context window monitoring** — Tracks context usage, warns when running low, auto-saves state for seamless recovery
 - **Web search** — Search the web and news via DuckDuckGo, with region filtering
+- **Reddit integration** — Browse subreddits, read posts and comments, search discussions, post and comment (with OAuth2)
 - **API integration** — Call any REST API with configurable auth, headers, and body; 10 pre-built free API integrations
 - **Persistent memory** — Remembers facts, preferences, and context across sessions (SQLite-backed)
 - **Task planning** — Breaks complex requests into ordered tasks with dependencies and progress tracking
@@ -130,6 +132,19 @@ ANTHROPIC_API_KEY=sk-ant-...
 
 That's it. Docker is managed automatically — the first run builds the image and starts the container.
 
+### Reddit Setup (Optional)
+
+To enable Reddit integration, add these to your `.env`:
+
+```
+REDDIT_CLIENT_ID=your_client_id
+REDDIT_CLIENT_SECRET=your_client_secret
+REDDIT_USERNAME=your_reddit_username
+REDDIT_PASSWORD=your_reddit_password
+```
+
+Create a Reddit app at https://www.reddit.com/prefs/apps (type: "script", redirect URI: `http://localhost:8080`).
+
 ### Run
 
 ```bash
@@ -153,7 +168,7 @@ miguel
 | `/history` | Show the improvement log |
 | `/quit` | Exit |
 
-Ask Miguel to search the web, call APIs, remember your preferences, create a plan for a project, analyze files in `user_files/`, or query your data.
+Ask Miguel to search the web, browse Reddit, call APIs, remember your preferences, create a plan for a project, analyze files in `user_files/`, or query your data.
 
 ### Improvement Mode
 
@@ -178,7 +193,7 @@ HOST (your machine)                           DOCKER CONTAINER (sandboxed)
 │  Validation checks                   │◄────►│  ├── Coder sub-agent         │
 │  Terminal display                    │      │  ├── Researcher sub-agent    │
 │                                      │      │  ├── Analyst sub-agent       │
-│                                      │      │  └── 46 tools                │
+│                                      │      │  └── 52 tools                │
 └──────────────────────────────────────┘      └──────────────────────────────┘
 ```
 
@@ -189,9 +204,9 @@ HOST (your machine)                           DOCKER CONTAINER (sandboxed)
 │                  Miguel (Coordinator)                │
 │              Agno Team — coordinate mode             │
 │                                                      │
-│  46 tools: self-improvement, memory, planning,       │
+│  52 tools: self-improvement, memory, planning,       │
 │            web search, file analysis, API, context,   │
-│            filesystem                                 │
+│            Reddit, filesystem                         │
 │                                                      │
 │  Strategy: assess complexity → plan → delegate/do    │
 │  Context: check_context() → auto_compact() on low    │
@@ -298,7 +313,7 @@ These were created by Miguel itself after completing all seed capabilities:
 | cap-017 | Evolve into Agno Team with sub-agent delegation | ✅ done |
 | cap-018 | Context-aware execution strategy | ✅ done |
 | cap-019 | Context window awareness and auto-compaction | ✅ done |
-| cap-020 | Reddit integration — browse, post, and interact | ⬜ pending |
+| cap-020 | Reddit integration — browse, post, and interact | ✅ done |
 | cap-021 | Architecture consolidation and cleanup | ⬜ pending |
 
 *This list grows over time as Miguel generates and implements new capabilities.*
@@ -310,7 +325,7 @@ Miguel/
 ├── Dockerfile                     # Container image definition
 ├── docker-compose.yml             # Container config + volume mounts
 ├── pyproject.toml                 # Dependencies + CLI entry point
-├── .env                           # API key (gitignored)
+├── .env                           # API key + Reddit credentials (gitignored)
 ├── LICENSE                        # CC BY-NC 4.0
 ├── CONTRIBUTING.md                # Contribution guidelines
 ├── user_files/                    # Shared workspace for user files
@@ -344,12 +359,13 @@ Miguel/
 │           ├── web_tools.py           # Web search (DuckDuckGo)
 │           ├── memory_tools.py        # Persistent memory (SQLite)
 │           ├── planning_tools.py      # Task planning + dependencies
+│           ├── reddit_tools.py        # Reddit integration (OAuth2 API)
 │           └── file_analysis_tools.py # PDF, CSV/Excel, image analysis
 ```
 
 ## Tools
 
-Miguel has 46 coordinator tools across 13 categories, plus 3 specialized sub-agents.
+Miguel has 52 coordinator tools across 14 categories, plus 3 specialized sub-agents.
 
 | Category | Tools | Description |
 |----------|-------|-------------|
@@ -361,6 +377,7 @@ Miguel has 46 coordinator tools across 13 categories, plus 3 specialized sub-age
 | **Dependencies** | `add_dependency`, `list_dependencies` | Install and track Python packages |
 | **Web Search** | `web_search`, `web_news`, `web_search_detailed` | Search the web via DuckDuckGo |
 | **API Integration** | `http_request`, `api_get`, `api_post`, `api_quickstart` | Call REST APIs with auth, headers, and pre-built integrations |
+| **Reddit** | `reddit_browse`, `reddit_read`, `reddit_search`, `reddit_post`, `reddit_comment`, `reddit_user` | Browse, search, post, and comment on Reddit |
 | **Memory** | `remember`, `recall`, `forget`, `list_memories` | Persistent facts, preferences, context |
 | **Planning** | `create_plan`, `add_task`, `update_task`, `show_plan`, `list_plans`, `get_next_task`, `remove_plan` | Structured task decomposition |
 | **File Analysis** | `analyze_csv`, `analyze_pdf`, `analyze_image`, `csv_query` | PDF text extraction, data analysis, image metadata |
