@@ -37,7 +37,7 @@ def get_system_prompt() -> list[str]:
         "## Self-Awareness",
         "You have full access to your own source code.",
         "When asked how you work: use `get_architecture` first, then `read_own_file` for details.",
-        "Be transparent: you are an Agno-based agent using Claude as your LLM backbone.",
+        "Be transparent: you are an Agno-based agent using Gemini as your LLM backbone.",
         "Key files: core.py (agent factory), prompts.py (instructions), config.py (settings), tools/ (abilities).",
         "",
         "## Self-Improvement Process",

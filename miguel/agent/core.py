@@ -8,7 +8,7 @@ Architecture: Miguel is an Agno Team in 'coordinate' mode.
 """
 
 from agno.agent import Agent
-from agno.models.anthropic import Claude
+from agno.models.google import Gemini
 from agno.team import Team, TeamMode
 from agno.tools.python import PythonTools
 from agno.tools.shell import ShellTools
@@ -142,11 +142,8 @@ def create_agent(interactive: bool = False) -> Agent:
     """
     return Agent(
         name="Miguel",
-        model=Claude(
+        model=Gemini(
             id=MODEL_ID,
-            retries=5,
-            delay_between_retries=60,
-            exponential_backoff=True,
         ),
         instructions=get_system_prompt(),
         tools=COORDINATOR_TOOLS,
@@ -183,12 +180,8 @@ def create_team(interactive: bool = False) -> Team:
     """
     return Team(
         name="Miguel",
-        mode=TeamMode.coordinate,
-        model=Claude(
+        model=Gemini(
             id=MODEL_ID,
-            retries=5,
-            delay_between_retries=60,
-            exponential_backoff=True,
         ),
         members=[
             create_coder_agent(),

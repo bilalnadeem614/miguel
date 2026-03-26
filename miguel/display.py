@@ -13,23 +13,39 @@ except ImportError:
 console = Console()
 
 
+def _matches_event(event_value, run_event_member) -> bool:
+    """Match event values across enum/string representations."""
+    candidates = {
+        run_event_member,
+        getattr(run_event_member, "value", None),
+        getattr(run_event_member, "name", None),
+        str(run_event_member),
+    }
+    event_as_str = str(event_value)
+    return event_value in candidates or event_as_str in {str(c) for c in candidates if c is not None}
+
+
 def render_stream(stream) -> None:
     """Render an Agno streaming response to the terminal with Rich formatting."""
     for event in stream:
+        event_value = getattr(event, "event", None)
+        event_name = str(event_value) if event_value is not None else ""
+        content = getattr(event, "content", None)
+
         if RunEvent is None:
             # Fallback: just print content if RunEvent isn't available
-            if hasattr(event, "content") and event.content:
-                console.print(event.content, end="")
+            if content:
+                console.print(content, end="")
             continue
 
-        if event.event == RunEvent.run_started:
+        if _matches_event(event_value, RunEvent.run_started):
             pass  # Silent start
 
-        elif event.event == RunEvent.run_content:
-            if event.content:
-                console.print(event.content, end="")
+        elif _matches_event(event_value, RunEvent.run_content):
+            if content:
+                console.print(content, end="")
 
-        elif event.event == RunEvent.tool_call_started:
+        elif _matches_event(event_value, RunEvent.tool_call_started):
             if hasattr(event, "tool") and event.tool:
                 tool_name = getattr(event.tool, "tool_name", "unknown")
                 tool_args = getattr(event.tool, "tool_args", "")
@@ -43,7 +59,7 @@ def render_stream(stream) -> None:
                     )
                 )
 
-        elif event.event == RunEvent.tool_call_completed:
+        elif _matches_event(event_value, RunEvent.tool_call_completed):
             if hasattr(event, "tool") and event.tool:
                 result = getattr(event.tool, "result", "")
                 if result:
@@ -57,16 +73,34 @@ def render_stream(stream) -> None:
                         )
                     )
 
-        elif event.event == RunEvent.run_completed:
+        elif _matches_event(event_value, RunEvent.run_completed):
             console.print()  # Final newline
+
+        elif content:
+            # Catch-all fallback for unknown/new event types that still carry text.
+            # Team completion events can carry full final content, which duplicates
+            # already-streamed text from TeamRunContent.
+            if event_name.endswith("RunCompleted") or event_name.endswith("ContentCompleted"):
+                continue
+            console.print(content, end="")
 
 
 def render_stream_simple(stream) -> str:
     """Render a stream and return the full content as a string (for validation)."""
     content_parts = []
     for event in stream:
-        if RunEvent and event.event == RunEvent.run_content and event.content:
-            content_parts.append(event.content)
+        content = getattr(event, "content", None)
+        if not content:
+            continue
+
+        if not RunEvent:
+            content_parts.append(content)
+            continue
+
+        if _matches_event(getattr(event, "event", None), RunEvent.run_content):
+            content_parts.append(content)
+        elif getattr(event, "event", None) is None:
+            content_parts.append(content)
     return "".join(content_parts)
 
 

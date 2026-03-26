@@ -1,7 +1,7 @@
 # Miguel Architecture Map
 
 ## Overview
-Miguel is a self-improving AI agent built on **Agno** (framework) + **Claude** (LLM). It operates as an **Agno Team in `coordinate` mode** — a coordinator with three sub-agents, context-aware execution, and persistent memory/planning.
+Miguel is a self-improving AI agent built on **Agno** (framework) + **Gemini** (LLM). It operates as an **Agno Team in `coordinate` mode** — a coordinator with three sub-agents, context-aware execution, and persistent memory/planning.
 
 ## Directory Structure
 ```

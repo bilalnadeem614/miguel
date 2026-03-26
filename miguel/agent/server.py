@@ -76,8 +76,13 @@ def run(req: RunRequest):
         for event in stream:
             try:
                 data = json.dumps(event.to_dict(), default=str)
-            except Exception:
-                continue
+            except Exception as e:
+                data = json.dumps(
+                    {
+                        "event": "server_stream_error",
+                        "content": f"[server] Failed to serialize event: {type(e).__name__}: {e}",
+                    }
+                )
             yield f"data: {data}\n\n"
         yield "data: [DONE]\n\n"
 

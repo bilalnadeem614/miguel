@@ -11,7 +11,7 @@ on complex tasks.
 """
 
 from agno.agent import Agent
-from agno.models.anthropic import Claude
+from agno.models.google import Gemini
 from agno.tools.python import PythonTools
 from agno.tools.shell import ShellTools
 from agno.tools.local_file_system import LocalFileSystemTools
@@ -21,10 +21,13 @@ from miguel.agent.config import MODEL_ID, USER_FILES_DIR
 
 AGENT_DIR = Path(__file__).parent
 
-
-def _make_model() -> Claude:
+def _make_model() -> Gemini:
     """Create a shared model config for sub-agents."""
-    return Claude(id=MODEL_ID, retries=3, delay_between_retries=30, exponential_backoff=True)
+    return Gemini(id=MODEL_ID)
+# def _make_model() -> Claude:
+#     """Create a shared model config for sub-agents."""
+#     return Claude(id=MODEL_ID, retries=3, delay_between_retries=30, exponential_backoff=True)
+
 
 
 def create_coder_agent() -> Agent:
