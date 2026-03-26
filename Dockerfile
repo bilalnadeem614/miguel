@@ -9,7 +9,7 @@ WORKDIR /app
 # Pre-install all Python dependencies (agent + server)
 RUN pip install --no-cache-dir \
     agno \
-    anthropic \
+    google-genai \
     "typer[all]" \
     rich \
     python-dotenv \

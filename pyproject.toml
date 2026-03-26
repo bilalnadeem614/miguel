@@ -18,7 +18,7 @@ classifiers = [
 ]
 dependencies = [
     "agno",
-    "anthropic",
+    "google-genai",
     "typer[all]",
     "rich",
     "python-dotenv",
@@ -40,3 +40,8 @@ miguel = "miguel.cli:app"
 [build-system]
 requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["miguel*"]
+exclude = ["user_files*", "tests*"]

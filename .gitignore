@@ -27,3 +27,4 @@ venv/
 # User files (contents are user-specific, not committed)
 user_files/*
 !user_files/.gitkeep
+temp.py
