@@ -99,6 +99,12 @@ from miguel.agent.tools.reddit_tools import (
     reddit_comment,
     reddit_user,
 )
+from miguel.agent.tools.preferences_tools import (
+    load_user_preferences_tool,
+    update_user_preferences_tool,
+    create_new_preference_domain_tool,
+    reflect_on_interaction_preferences_tool,
+)
 
 
 # --- Coordinator tools: everything the main Miguel agent can use directly ---
@@ -131,6 +137,9 @@ COORDINATOR_TOOLS = [
     check_context, auto_compact,
     # Reddit integration (browse, post, comment, search)
     reddit_browse, reddit_read, reddit_search, reddit_post, reddit_comment, reddit_user,
+    # User preferences (markdown + memory + reflection)
+    load_user_preferences_tool, update_user_preferences_tool, create_new_preference_domain_tool,
+    reflect_on_interaction_preferences_tool,
 ]
 
 

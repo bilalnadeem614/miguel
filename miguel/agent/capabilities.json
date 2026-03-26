@@ -230,6 +230,16 @@
       "category": "self-generated",
       "added_at": "2026-03-10T11:53:36.499966+00:00",
       "completed_at": null
+    },
+    {
+      "id": "cap-025",
+      "title": "Markdown preference tools for coordinator",
+      "description": "Expose markdown-based user preferences as coordinator tools: load preferences, update with rationale and git commit trace, and create new preference domains. Ensure prompts always apply relevant preferences at task start.",
+      "priority": 2,
+      "status": "checked",
+      "category": "self-generated",
+      "added_at": "2026-03-26T00:00:00+00:00",
+      "completed_at": "2026-03-26T00:00:00+00:00"
     }
   ]
 }

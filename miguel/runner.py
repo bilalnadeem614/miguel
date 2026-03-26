@@ -19,6 +19,7 @@ from miguel.tests.test_agent_health import run_all_checks
 MIGUEL_PKG_DIR = Path(__file__).parent
 AGENT_DIR = MIGUEL_PKG_DIR / "agent"
 PROJECT_DIR = MIGUEL_PKG_DIR.parent
+PREFERENCES_DIR = PROJECT_DIR / "preferences"
 
 # Container path the agent sees inside Docker
 CONTAINER_AGENT_DIR = "/app/miguel/agent"
@@ -71,15 +72,24 @@ def _git_commit_runner_changes() -> None:
     _git("add", "--all")
     # Unstage agent files — those are handled separately by _git_snapshot/_git_commit_batch
     _git("reset", "HEAD", "--", "miguel/agent/")
+    _git("reset", "HEAD", "--", "preferences/")
     result = _git("diff", "--cached", "--quiet")
     if result.returncode != 0:
         _git("commit", "-m", "chore: runner-managed file updates")
 
 
+def _batch_paths() -> list[str]:
+    """Return paths considered valid outputs for an improvement batch."""
+    paths = ["miguel/agent/"]
+    if PREFERENCES_DIR.exists():
+        paths.append("preferences/")
+    return paths
+
+
 def _git_snapshot(label: str) -> None:
     # First, commit any stray runner-side changes so they don't pollute this batch
     _git_commit_runner_changes()
-    _git("add", "miguel/agent/")
+    _git("add", *_batch_paths())
     result = _git("diff", "--cached", "--quiet")
     if result.returncode != 0:
         _git("commit", "-m", f"snapshot: {label}")
@@ -87,12 +97,16 @@ def _git_snapshot(label: str) -> None:
 
 def _git_rollback() -> None:
     _git("checkout", "--", "miguel/agent/")
+    if PREFERENCES_DIR.exists():
+        _git("checkout", "--", "preferences/")
     # Also clean any new untracked files the agent may have created
     _git("clean", "-fd", "miguel/agent/")
+    if PREFERENCES_DIR.exists():
+        _git("clean", "-fd", "preferences/")
 
 
 def _git_commit_batch(batch_num: int, summary: str) -> None:
-    _git("add", "miguel/agent/")
+    _git("add", *_batch_paths())
     result = _git("diff", "--cached", "--quiet")
     if result.returncode != 0:
         _git("commit", "-m", f"Batch {batch_num}: {summary}")
@@ -194,6 +208,8 @@ INSTRUCTIONS:
 4. If ANY tool call fails: diagnose the root cause, fix it, do NOT retry the same thing
 5. Update agent/README.md to reflect your current state (capabilities, tools, features). The runner will copy it to the project root for GitHub.
 6. Before starting, note your current tool count in core.py and line count in prompts.py. After finishing, report the before/after delta.
+7. Reflection checkpoint: Ask "Did this interaction reveal any new or updated user preference?" If yes, use preference tools to suggest or apply updates.
+8. Preference file updates under preferences/ are valid improvements when logged and committed with clear what/why.
 
 Make exactly ONE focused improvement this batch. Be precise and ensure valid Python syntax."""
 
@@ -306,7 +322,7 @@ def run_improvement_loop(n_batches: int) -> None:
 
         if not errors:
             # Check if the agent actually made changes
-            _git("add", "miguel/agent/")
+            _git("add", *_batch_paths())
             diff_result = _git("diff", "--cached", "--quiet")
             if diff_result.returncode == 0:
                 # No files changed — agent didn't do anything
@@ -317,6 +333,8 @@ def run_improvement_loop(n_batches: int) -> None:
 
             # Unstage so _git_commit_batch can re-stage cleanly
             _git("reset", "HEAD", "--", "miguel/agent/")
+            if PREFERENCES_DIR.exists():
+                _git("reset", "HEAD", "--", "preferences/")
 
             # Merge agent-side changes into project-root files
             _merge_added_deps()

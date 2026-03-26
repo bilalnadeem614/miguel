@@ -10,13 +10,18 @@ Architecture:
 
 import importlib
 import json
+import logging
+import re
 import sys
 
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from miguel.core.preferences import create_preference_file, get_relevant_preferences
 
 app = FastAPI(title="Miguel Agent Server")
+
+logger = logging.getLogger(__name__)
 
 _agent = None           # Plain Agent for batch mode
 _interactive_team = None # Team for interactive mode
@@ -26,6 +31,82 @@ class RunRequest(BaseModel):
     prompt: str
     session_id: str | None = None
     interactive: bool = False
+
+
+_KNOWN_DOMAIN_KEYWORDS = {
+    "python": "python",
+    "javascript": "js",
+    "js": "js",
+    "react": "js",
+    "typescript": "typescript",
+    "ts": "typescript",
+    "node": "js",
+    "go": "go",
+    "golang": "go",
+    "rust": "rust",
+    "java": "java",
+    "kotlin": "kotlin",
+    "swift": "swift",
+    "php": "php",
+    "ruby": "ruby",
+    "csharp": "csharp",
+    "c#": "csharp",
+    "devops": "devops",
+    "terraform": "terraform",
+    "kubernetes": "kubernetes",
+    "docker": "docker",
+    "sql": "sql",
+}
+
+
+def _extract_domains_from_prompt(prompt: str) -> list[str]:
+    """Infer likely preference domains from user task text."""
+    text = (prompt or "").lower()
+    found: list[str] = []
+
+    def _contains_keyword(haystack: str, keyword: str) -> bool:
+        # Match whole-token style keywords to avoid false positives like js in json.
+        pattern = rf"(?<![a-z0-9_]){re.escape(keyword)}(?![a-z0-9_])"
+        return re.search(pattern, haystack) is not None
+
+    for keyword, domain in _KNOWN_DOMAIN_KEYWORDS.items():
+        if _contains_keyword(text, keyword) and domain not in found:
+            found.append(domain)
+
+    # Allow explicit pattern like "domain: <name>" or "preferences for <name>"
+    for pattern in [r"domain\s*:\s*([a-z0-9_-]+)", r"preferences\s+for\s+([a-z0-9_-]+)"]:
+        for match in re.findall(pattern, text):
+            safe = re.sub(r"[^a-z0-9_-]+", "", match)
+            if safe and safe not in found:
+                found.append(safe)
+
+    return found
+
+
+def _build_preference_augmented_prompt(prompt: str) -> str:
+    """Load relevant preferences and prepend them to task context.
+
+    Also auto-creates missing domain preference files when new domains are
+    inferred from the task prompt.
+    """
+    domains = _extract_domains_from_prompt(prompt)
+    for domain in domains:
+        if domain in {"main", "python", "js"}:
+            continue
+        try:
+            created = create_preference_file(domain)
+            if created:
+                logger.info("Auto-created preference domain file for inferred domain: %s", domain)
+        except Exception as exc:
+            logger.exception("Failed auto-creating preference domain '%s': %s", domain, exc)
+
+    preferences = get_relevant_preferences(prompt)
+    return (
+        "[PREFERENCE CONTEXT - APPLY FIRST]\n"
+        f"{preferences}\n\n"
+        "[USER TASK]\n"
+        f"{prompt}"
+    )
 
 
 def _create_agents():
@@ -65,12 +146,13 @@ def reload_agent():
 def run(req: RunRequest):
     # Use Team for interactive, plain Agent for batch
     runner = _interactive_team if req.interactive else _agent
+    effective_prompt = _build_preference_augmented_prompt(req.prompt)
 
     kwargs = dict(stream=True, stream_events=True)
     if req.session_id:
         kwargs["session_id"] = req.session_id
 
-    stream = runner.run(req.prompt, **kwargs)
+    stream = runner.run(effective_prompt, **kwargs)
 
     def generate():
         for event in stream:
