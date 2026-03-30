@@ -173,3 +173,11 @@ Before/after: Total codebase 5131→4619 lines (-512, -10%). Prompt 270→100 li
 ### 2026-03-30 11:13:31 UTC
 **Summary:** Updated preference 'code_saving' in domain 'main' to 'only_on_explicit_request'. Reason: User explicitly requested not to save code as a file unless asked.
 **Files changed:** preferences/*.md, miguel/core/preferences.py
+
+### 2026-03-30 13:17:42 UTC
+**Summary:** Updated preference 'variable_style' in domain 'python' to 'snake_case'. Reason: User requested to change variable naming convention to snake_case for python code
+**Files changed:** preferences/*.md, miguel/core/preferences.py
+
+### 2026-03-30 13:19:04 UTC
+**Summary:** Updated preference 'variable_style' in domain 'js' to 'camelCase'. Reason: User requested to use camelCase for JavaScript code.
+**Files changed:** preferences/*.md, miguel/core/preferences.py

@@ -10,6 +10,8 @@ from __future__ import annotations
 import logging
 import re
 import subprocess
+import threading
+import uuid
 from pathlib import Path
 
 from miguel.agent.tools.error_utils import safe_tool
@@ -26,6 +28,54 @@ logger = logging.getLogger(__name__)
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PREFERENCES_DIR = REPO_ROOT / "preferences"
+
+_PENDING_LOCK = threading.RLock()
+_PENDING_UPDATES: dict[str, dict[str, str]] = {}
+
+
+def _create_pending_update(domain: str, key: str, value: str, reason: str) -> str:
+    """Create and store a pending preference update request."""
+    update_id = f"prefupd-{uuid.uuid4().hex[:8]}"
+    with _PENDING_LOCK:
+        _PENDING_UPDATES[update_id] = {
+            "domain": domain,
+            "key": key,
+            "value": value,
+            "reason": reason,
+        }
+    return update_id
+
+
+def _get_pending_update(update_id: str) -> dict[str, str] | None:
+    """Fetch a pending update by id without removing it."""
+    with _PENDING_LOCK:
+        return _PENDING_UPDATES.get(update_id)
+
+
+def _pop_pending_update(update_id: str) -> dict[str, str] | None:
+    """Fetch and remove a pending update by id."""
+    with _PENDING_LOCK:
+        return _PENDING_UPDATES.pop(update_id, None)
+
+
+def _apply_preference_update(domain: str, key: str, value: str, reason: str) -> str:
+    """Apply a preference update and run side-effects (cache, reflection log, git)."""
+    update_preference(domain=domain, key=key, value=value, reason=reason)
+    clear_all_preferences_cache()  # Invalidate session cache when preferences change
+
+    what = f"Updated preference '{key}' in domain '{domain}' to '{value}'"
+    why = f"Reason: {reason}"
+    reflection = log_improvement(summary=f"{what}. {why}", files_changed="preferences/*.md, miguel/core/preferences.py")
+    commit_status = _commit_preference_change(domain=domain, key=key, value=value, reason=reason)
+
+    logger.info("Preference updated domain=%s key=%s why=%s", domain, key, reason)
+    return "\n".join([
+        f"Preference updated: domain={domain}, key={key}, value={value}",
+        f"Reflection log: {reflection}",
+        f"Git: {commit_status}",
+        f"What: {what}",
+        f"Why: {why}",
+    ])
 
 
 def _infer_preference_from_feedback(feedback: str, domain_hint: str = "main") -> tuple[str, str, str] | None:
@@ -155,37 +205,86 @@ def load_user_preferences_tool(domain: str = "main") -> str:
 
 @safe_tool
 def update_user_preferences_tool(domain: str, key: str, value: str, reason: str) -> str:
-    """Update a user preference and persist it to markdown, memory, and git.
+    """Create a pending preference update that requires explicit user approval.
 
-    This tool updates the selected domain file inside preferences/, mirrors the
-    update to persistent memory via the core preference system, logs a
-    self-reflection improvement entry (what + why), and attempts a best-effort
-    git commit for traceability.
+    Human-in-the-loop mode: this tool NO LONGER writes immediately. It creates
+    a pending update request and returns an approval ID. The update must then be
+    explicitly approved by calling resolve_user_preference_update_tool().
 
     Args:
         domain: Preference domain (e.g. "main", "python", "js", "typescript").
         key: Preference key to create or update.
-        value: New preference value.
-        reason: Why the preference was changed.
+        value: Proposed preference value.
+        reason: Why the preference should be changed.
 
     Returns:
-        Multi-line status output with update, reflection log, and git commit status.
+        Approval request with an update ID.
     """
-    update_preference(domain=domain, key=key, value=value, reason=reason)
-    clear_all_preferences_cache()  # Invalidate session cache when preferences change
-
-    what = f"Updated preference '{key}' in domain '{domain}' to '{value}'"
-    why = f"Reason: {reason}"
-    reflection = log_improvement(summary=f"{what}. {why}", files_changed="preferences/*.md, miguel/core/preferences.py")
-    commit_status = _commit_preference_change(domain=domain, key=key, value=value, reason=reason)
-
-    logger.info("Preference updated domain=%s key=%s why=%s", domain, key, reason)
+    update_id = _create_pending_update(domain=domain, key=key, value=value, reason=reason)
     return "\n".join([
-        f"Preference updated: domain={domain}, key={key}, value={value}",
-        f"Reflection log: {reflection}",
-        f"Git: {commit_status}",
-        f"What: {what}",
-        f"Why: {why}",
+        "Approval required before saving preference update.",
+        f"Pending update id: {update_id}",
+        f"Proposed: domain={domain}, key={key}, value={value}",
+        f"Reason: {reason}",
+        "Next step: ask the user for approval, then call resolve_user_preference_update_tool(update_id, approve=True, user_confirmation='...').",
+    ])
+
+
+@safe_tool
+def list_pending_preference_updates_tool() -> str:
+    """List pending preference update requests awaiting user approval."""
+    with _PENDING_LOCK:
+        if not _PENDING_UPDATES:
+            return "No pending preference updates."
+
+        lines = [f"Pending preference updates ({len(_PENDING_UPDATES)}):"]
+        for update_id, item in sorted(_PENDING_UPDATES.items()):
+            lines.append(
+                f"- {update_id}: domain={item['domain']}, key={item['key']}, value={item['value']}, reason={item['reason']}"
+            )
+        return "\n".join(lines)
+
+
+@safe_tool
+def resolve_user_preference_update_tool(update_id: str, approve: bool, user_confirmation: str = "") -> str:
+    """Approve/reject a pending preference update after explicit user confirmation.
+
+    Args:
+        update_id: Pending update id returned by update_user_preferences_tool.
+        approve: True to apply the update, False to reject it.
+        user_confirmation: Short quote/summary of user's approval/rejection.
+
+    Returns:
+        Result of approval/rejection handling.
+    """
+    pending = _get_pending_update(update_id)
+    if pending is None:
+        return f"No pending preference update found for id '{update_id}'."
+
+    if not user_confirmation.strip():
+        return "Error: user_confirmation is required to resolve a pending update."
+
+    if not approve:
+        _pop_pending_update(update_id)
+        return (
+            f"Rejected pending preference update {update_id}. "
+            f"User confirmation: {user_confirmation.strip()}"
+        )
+
+    approved_item = _pop_pending_update(update_id)
+    if approved_item is None:
+        return f"Pending preference update '{update_id}' was already resolved."
+
+    result = _apply_preference_update(
+        domain=approved_item["domain"],
+        key=approved_item["key"],
+        value=approved_item["value"],
+        reason=approved_item["reason"],
+    )
+    return "\n".join([
+        f"Approved pending preference update {update_id}.",
+        f"User confirmation: {user_confirmation.strip()}",
+        result,
     ])
 
 
@@ -292,7 +391,7 @@ def reflect_on_interaction_preferences_tool(
             f"Answer: Yes ({'repeated' if repeated else 'new/updated'} signal).",
             f"What: {what}",
             f"Why: {why}",
-            "Action: Applied preference update.",
+            "Action: Created approval request (human confirmation required before save).",
             result,
         ])
 

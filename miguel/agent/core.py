@@ -103,6 +103,8 @@ from miguel.agent.tools.preferences_tools import (
     load_user_preferences_tool,
     update_user_preferences_tool,
     create_new_preference_domain_tool,
+    list_pending_preference_updates_tool,
+    resolve_user_preference_update_tool,
     reflect_on_interaction_preferences_tool,
 )
 from miguel.agent.tools.git_tools import (
@@ -147,6 +149,7 @@ COORDINATOR_TOOLS = [
     reddit_browse, reddit_read, reddit_search, reddit_post, reddit_comment, reddit_user,
     # User preferences (markdown + memory + reflection)
     load_user_preferences_tool, update_user_preferences_tool, create_new_preference_domain_tool,
+    list_pending_preference_updates_tool, resolve_user_preference_update_tool,
     reflect_on_interaction_preferences_tool,
     # Git Versioning
     git_commit, git_push,
