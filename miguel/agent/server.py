@@ -83,12 +83,28 @@ def _extract_domains_from_prompt(prompt: str) -> list[str]:
     return found
 
 
-def _build_preference_augmented_prompt(prompt: str) -> str:
-    """Load relevant preferences and prepend them to task context.
+def _build_preference_augmented_prompt(prompt: str, session_id: str | None = None) -> str:
+    """Load relevant preferences (cached per session) and prepend them to task context.
 
     Also auto-creates missing domain preference files when new domains are
     inferred from the task prompt.
+    
+    Preferences are cached per session_id to avoid redundant recomputation.
     """
+    from miguel.agent.tools.session_cache import get_cached_preferences, set_cached_preferences
+    
+    # Check if preferences are already cached for this session
+    if session_id:
+        cached = get_cached_preferences(session_id)
+        if cached is not None:
+            return (
+                "[PREFERENCE CONTEXT - APPLY FIRST]\n"
+                f"{cached}\n\n"
+                "[USER TASK]\n"
+                f"{prompt}"
+            )
+    
+    # Not cached yet — compute preferences once
     domains = _extract_domains_from_prompt(prompt)
     for domain in domains:
         if domain in {"main", "python", "js"}:
@@ -101,6 +117,11 @@ def _build_preference_augmented_prompt(prompt: str) -> str:
             logger.exception("Failed auto-creating preference domain '%s': %s", domain, exc)
 
     preferences = get_relevant_preferences(prompt)
+    
+    # Cache the computed preferences for this session
+    if session_id:
+        set_cached_preferences(session_id, preferences)
+    
     return (
         "[PREFERENCE CONTEXT - APPLY FIRST]\n"
         f"{preferences}\n\n"
@@ -146,7 +167,7 @@ def reload_agent():
 def run(req: RunRequest):
     # Use Team for interactive, plain Agent for batch
     runner = _interactive_team if req.interactive else _agent
-    effective_prompt = _build_preference_augmented_prompt(req.prompt)
+    effective_prompt = _build_preference_augmented_prompt(req.prompt, session_id=req.session_id)
 
     kwargs = dict(stream=True, stream_events=True)
     if req.session_id:

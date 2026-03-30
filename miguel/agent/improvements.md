@@ -169,3 +169,7 @@ Before/after: Total codebase 5131→4619 lines (-512, -10%). Prompt 270→100 li
 ### 2026-03-30 07:12:31 UTC
 **Summary:** Implemented versioning for self-updates by creating `versioning_tools.py` with `versioned_write_file` and `rollback_file` functions, and integrating them into `core.py`.
 **Files changed:** tools/versioning_tools.py, core.py
+
+### 2026-03-30 11:13:31 UTC
+**Summary:** Updated preference 'code_saving' in domain 'main' to 'only_on_explicit_request'. Reason: User explicitly requested not to save code as a file unless asked.
+**Files changed:** preferences/*.md, miguel/core/preferences.py

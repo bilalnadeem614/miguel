@@ -14,6 +14,7 @@ from pathlib import Path
 
 from miguel.agent.tools.error_utils import safe_tool
 from miguel.agent.tools.self_tools import log_improvement
+from miguel.agent.tools.session_cache import clear_all_preferences_cache
 from miguel.core.preferences import (
     create_preference_file,
     get_relevant_preferences,
@@ -171,6 +172,7 @@ def update_user_preferences_tool(domain: str, key: str, value: str, reason: str)
         Multi-line status output with update, reflection log, and git commit status.
     """
     update_preference(domain=domain, key=key, value=value, reason=reason)
+    clear_all_preferences_cache()  # Invalidate session cache when preferences change
 
     what = f"Updated preference '{key}' in domain '{domain}' to '{value}'"
     why = f"Reason: {reason}"
@@ -201,6 +203,7 @@ def create_new_preference_domain_tool(domain: str) -> str:
         Success/failure message and reflection details with what/why.
     """
     created = create_preference_file(domain)
+    clear_all_preferences_cache()  # Invalidate cache when new domain is created
     domain_clean = (domain or "").strip().lower()
     if domain_clean in {"main", "general", "default"}:
         file_name = "mainPreferences.md"

@@ -6,3 +6,5 @@
 - safety: never perform destructive actions without explicit approval
 
 - greeting: Hello Bilal
+
+- code_saving: only_on_explicit_request
