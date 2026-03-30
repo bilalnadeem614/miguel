@@ -6,6 +6,8 @@ services:
       - .:/app:ro
       # Agent directory writable (overrides the ro mount above)
       - ./miguel/agent:/app/miguel/agent:rw
+      # Preferences writable so update_user_preferences_tool can persist changes
+      - ./preferences:/app/preferences:rw
       # User files — shared workspace for users to exchange files with Miguel
       - ./user_files:/app/user_files:rw
     env_file:

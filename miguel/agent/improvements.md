@@ -161,3 +161,7 @@ Before/after: Total codebase 5131→4619 lines (-512, -10%). Prompt 270→100 li
 - Tool count: 52→53 coordinator tools, Researcher 7→8 tools
 - Capabilities: 21/21→21/23 checked (added 3 new, completed 1)
 **Files changed:** tools/web_tools.py, core.py, team.py, README.md
+
+### 2026-03-30 06:48:13 UTC
+**Summary:** Updated preference 'greeting' in domain 'main' to 'Hello Bilal'. Reason: User requested to be greeted with "Hello Bilal"
+**Files changed:** preferences/*.md, miguel/core/preferences.py
