@@ -165,3 +165,7 @@ Before/after: Total codebase 5131→4619 lines (-512, -10%). Prompt 270→100 li
 ### 2026-03-30 06:48:13 UTC
 **Summary:** Updated preference 'greeting' in domain 'main' to 'Hello Bilal'. Reason: User requested to be greeted with "Hello Bilal"
 **Files changed:** preferences/*.md, miguel/core/preferences.py
+
+### 2026-03-30 07:12:31 UTC
+**Summary:** Implemented versioning for self-updates by creating `versioning_tools.py` with `versioned_write_file` and `rollback_file` functions, and integrating them into `core.py`.
+**Files changed:** tools/versioning_tools.py, core.py

@@ -240,6 +240,16 @@
       "category": "self-generated",
       "added_at": "2026-03-26T00:00:00+00:00",
       "completed_at": "2026-03-26T00:00:00+00:00"
+    },
+    {
+      "id": "cap-026",
+      "title": "Implement versioning for self-updates",
+      "description": "Automatically save versions of agent code (tools, prompts) after modifications, enabling rollback.",
+      "priority": 1,
+      "status": "checked",
+      "category": "self-generated",
+      "added_at": "2026-03-30T06:56:35.400795+00:00",
+      "completed_at": "2026-03-30T07:12:28.263732+00:00"
     }
   ]
 }

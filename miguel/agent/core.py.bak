@@ -109,10 +109,6 @@ from miguel.agent.tools.git_tools import (
     git_commit,
     git_push,
 )
-from miguel.agent.tools.versioning_tools import (
-    versioned_write_file,
-    rollback_file,
-)
 
 
 # --- Coordinator tools: everything the main Miguel agent can use directly ---
@@ -150,8 +146,6 @@ COORDINATOR_TOOLS = [
     reflect_on_interaction_preferences_tool,
     # Git Versioning
     git_commit, git_push,
-    # Versioning tools
-    versioned_write_file, rollback_file,
 ]
 
 
