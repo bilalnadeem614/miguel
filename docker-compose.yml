@@ -12,6 +12,8 @@ services:
       - ./user_files:/app/user_files:rw
     env_file:
       - .env
+    environment:
+      - MIGUEL_DEBUG_STREAM=true
     ports:
       - "8420:8420"
     restart: unless-stopped

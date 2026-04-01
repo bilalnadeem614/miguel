@@ -169,14 +169,23 @@ def run(req: RunRequest):
     runner = _interactive_team if req.interactive else _agent
     effective_prompt = _build_preference_augmented_prompt(req.prompt, session_id=req.session_id)
 
+    print(f"LLM Input: {effective_prompt}")
+
     kwargs = dict(stream=True, stream_events=True)
     if req.session_id:
         kwargs["session_id"] = req.session_id
 
     stream = runner.run(effective_prompt, **kwargs)
 
-    def generate():
+    def log_stream(stream):
         for event in stream:
+            print(f"LLM Output: {event}")
+            yield event
+
+    logged_stream = log_stream(stream)
+
+    def generate():
+        for event in logged_stream:
             try:
                 data = json.dumps(event.to_dict(), default=str)
             except Exception as e:
