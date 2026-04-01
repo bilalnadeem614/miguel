@@ -196,21 +196,29 @@ def create_team(interactive: bool = False) -> Team:
       * Analyst: data analysis, CSV/PDF/image processing, statistics
 
     Sub-agents get fresh context windows, preventing context exhaustion
-    on complex multi-step tasks.
+    on complex multi-step tasks. The coordinator will load preferences
+    and pass them to the sub-agents.
 
     Args:
         interactive: If True, enable conversation history for chat sessions.
                      If False (default), no history — used for improvement batches.
     """
+    main_prefs = load_user_preferences_tool("main")
+    python_prefs = load_user_preferences_tool("python")
+    js_prefs = load_user_preferences_tool("js")
+
+    coder_prefs = f"{main_prefs}\n{python_prefs}\n{js_prefs}"
+    general_prefs = main_prefs
+
     return Team(
         name="Miguel",
         model=Gemini(
             id=MODEL_ID,
         ),
         members=[
-            create_coder_agent(),
-            create_researcher_agent(),
-            create_analyst_agent(),
+            create_coder_agent(coder_prefs),
+            create_researcher_agent(general_prefs),
+            create_analyst_agent(general_prefs),
         ],
         instructions=get_system_prompt(),
         tools=COORDINATOR_TOOLS,

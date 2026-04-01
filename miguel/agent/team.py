@@ -30,7 +30,7 @@ def _make_model() -> Gemini:
 
 
 
-def create_coder_agent() -> Agent:
+def create_coder_agent(preference_string: str) -> Agent:
     """Sub-agent specialized in writing, executing, and validating code.
 
     Handles: code generation, file writing, shell commands, debugging,
@@ -56,6 +56,7 @@ def create_coder_agent() -> Agent:
             f"User files directory: {USER_FILES_DIR}",
             "Return your results clearly — the coordinator will relay them to the user.",
             "If you encounter errors, debug them and fix the root cause.",
+            preference_string,
         ],
         tools=[
             PythonTools(base_dir=AGENT_DIR),
@@ -69,7 +70,7 @@ def create_coder_agent() -> Agent:
     )
 
 
-def create_researcher_agent() -> Agent:
+def create_researcher_agent(preference_string: str) -> Agent:
     """Sub-agent specialized in web research and information gathering.
 
     Handles: web searches, news lookup, API calls, fact-checking,
@@ -96,6 +97,7 @@ def create_researcher_agent() -> Agent:
             "Always cite sources. Synthesize information clearly.",
             "Return organized, well-structured findings to the coordinator.",
             "If first search doesn't work, rephrase and try again.",
+            preference_string,
         ],
         tools=[
             web_search,
@@ -111,7 +113,7 @@ def create_researcher_agent() -> Agent:
     )
 
 
-def create_analyst_agent() -> Agent:
+def create_analyst_agent(preference_string: str) -> Agent:
     """Sub-agent specialized in data and file analysis.
 
     Handles: CSV/Excel analysis, PDF extraction, image analysis,
@@ -138,6 +140,7 @@ def create_analyst_agent() -> Agent:
             "Present findings with clear tables, statistics, and insights.",
             "Return well-formatted analysis results to the coordinator.",
             f"User files directory: {USER_FILES_DIR}",
+            preference_string,
         ],
         tools=[
             analyze_csv,
