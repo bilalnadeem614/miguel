@@ -32,6 +32,8 @@ dependencies = [
     "Pillow",
     "requests",
     "beautifulsoup4",
+    "duckduckgo-search",
+    "google-generativeai",
 ]
 
 [project.scripts]
