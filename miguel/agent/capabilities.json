@@ -216,10 +216,10 @@
       "title": "Automated code testing and validation",
       "description": "Beyond syntax checking, Miguel should be able to run tests against code it writes. Add a structured testing tool that can: (1) Run pytest on a file or directory, (2) Execute a code snippet and compare output to expected output, (3) Run Miguel's own codebase tests to verify changes don't break things. This improves code quality and catches bugs before they ship. Should integrate with the existing validation pipeline and be usable by the Coder sub-agent.",
       "priority": 2,
-      "status": "unchecked",
+      "status": "checked",
       "category": "self-generated",
       "added_at": "2026-03-10T11:53:36.498253+00:00",
-      "completed_at": null
+      "completed_at": "2026-04-02T12:17:20.649697+00:00"
     },
     {
       "id": "cap-024",

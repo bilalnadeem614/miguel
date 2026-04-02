@@ -115,6 +115,11 @@ from miguel.agent.tools.versioning_tools import (
     versioned_write_file,
     rollback_file,
 )
+from miguel.agent.tools.testing_tools import (
+    run_pytest,
+    run_code_and_compare_output,
+    run_agent_tests,
+)
 
 
 # --- Coordinator tools: everything the main Miguel agent can use directly ---
@@ -155,6 +160,8 @@ COORDINATOR_TOOLS = [
     git_commit, git_push,
     # Versioning tools
     versioned_write_file, rollback_file,
+    # Testing tools
+    run_pytest, run_code_and_compare_output, run_agent_tests,
 ]
 
 
@@ -219,7 +226,7 @@ def create_team(interactive: bool = False) -> Team:
             create_coder_agent(coder_prefs),
             create_researcher_agent(general_prefs),
             create_analyst_agent(general_prefs),
-        ],
+        ],\
         instructions=get_system_prompt(),
         tools=COORDINATOR_TOOLS,
         markdown=True,
@@ -228,13 +235,13 @@ def create_team(interactive: bool = False) -> Team:
         determine_input_for_members=True,
         # Responses come back through the coordinator, not directly from sub-agents
         respond_directly=False,
-        **(
-            {
-                "db": SqliteDb(db_file=str(Path(__file__).parent / "miguel.db")),
-                "add_history_to_context": True,
-                "num_history_runs": 20,
-            }
-            if interactive
-            else {}
-        ),
+        **(\
+            {\
+                "db": SqliteDb(db_file=str(Path(__file__).parent / "miguel.db")),\
+                "add_history_to_context": True,\
+                "num_history_runs": 20,\
+            }\
+            if interactive\
+            else {}\
+        ),\
     )

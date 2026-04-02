@@ -37,6 +37,11 @@ def create_coder_agent(preference_string: str) -> Agent:
     project scaffolding, and code review tasks.
     """
     from miguel.agent.tools.recovery_tools import validate_agent_file, health_check
+    from miguel.agent.tools.testing_tools import (
+        run_pytest,
+        run_code_and_compare_output,
+        run_agent_tests,
+    )
 
     return Agent(
         name="Coder",
@@ -65,6 +70,9 @@ def create_coder_agent(preference_string: str) -> Agent:
             LocalFileSystemTools(target_directory=USER_FILES_DIR),
             validate_agent_file,
             health_check,
+            run_pytest,
+            run_code_and_compare_output,
+            run_agent_tests,
         ],
         markdown=True,
     )

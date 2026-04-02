@@ -189,3 +189,7 @@ Before/after: Total codebase 5131→4619 lines (-512, -10%). Prompt 270→100 li
 ### 2026-04-01 12:05:40 UTC
 **Summary:** Created a simple Gemini API chatbot program.
 **Files changed:** chatbot.py
+
+### 2026-04-02 12:17:23 UTC
+**Summary:** Implemented automated code testing and validation tools: `run_pytest`, `run_code_and_compare_output`, and `run_agent_tests`. These tools allow Miguel to run `pytest` on specified paths, execute code snippets and compare their output, and run tests on its own agent directory. The tools were added to `tools/testing_tools.py`, integrated into `core.py` as coordinator tools, and made available to the Coder sub-agent in `team.py`.
+**Files changed:** tools/testing_tools.py, core.py, team.py
