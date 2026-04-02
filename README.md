@@ -105,6 +105,7 @@ Batch 1 succeeded: Added web search via DuckDuckGo
 - **Context-aware batches** — Monitors context, prioritizes implementation, delegates heavy work
 - **Architecture awareness** — Maintains a map of its own codebase
 - **Error recovery** — Automatic backups, health checks, and restoration
+- **Automated testing** — Run `pytest` or execute code snippets with output comparison
 
 ## Quick Start
 
@@ -158,7 +159,7 @@ HOST (your machine)                           DOCKER CONTAINER (sandboxed)
 │  Validation checks                   │◄────►│  ├── Coder sub-agent         │
 │                                      │      │  ├── Researcher sub-agent    │
 │                                      │      │  ├── Analyst sub-agent       │
-│                                      │      │  └── 53 tools                │
+│                                      │      │  └── 56 tools                │
 └──────────────────────────────────────┘      └──────────────────────────────┘
 ```
 
@@ -166,17 +167,17 @@ HOST (your machine)                           DOCKER CONTAINER (sandboxed)
 
 ```
                     Miguel (Coordinator)
-                   53 tools, memory, planning
+                   56 tools, memory, planning
                           │
             ┌─────────────┼─────────────┐
             ▼             ▼             ▼
          Coder       Researcher     Analyst
-       (6 tools)     (8 tools)    (6 tools)
+       (9 tools)     (8 tools)    (6 tools)
       Python exec   Web search    CSV/Excel
       Shell cmds    Web reading   PDF extract
       File write    News search   Image analyze
       Validation    HTTP client   Pandas query
-                    API calls
+      Testing       API calls
 ```
 
 **Volume mounts:**
@@ -235,12 +236,12 @@ Miguel started with 10 seed capabilities and generates its own.
 | cap-020 | Reddit integration — browse, post, and interact | ✅ |
 | cap-021 | Architecture consolidation and cleanup | ✅ |
 | cap-022 | Webpage content extraction and reading | ✅ |
-| cap-023 | Automated code testing and validation | ⬜ |
+| cap-023 | Automated code testing and validation | ✅ |
 | cap-024 | Smart conversation starters with memory recall | ⬜ |
 
 ## Tools
 
-53 coordinator tools across 14 categories, plus 3 sub-agents:
+56 coordinator tools across 15 categories, plus 3 sub-agents:
 
 | Category | Tools | Description |
 |----------|-------|-------------|
@@ -258,6 +259,7 @@ Miguel started with 10 seed capabilities and generates its own.
 | **File Analysis** | `analyze_csv`, `analyze_pdf`, `analyze_image`, `csv_query` | PDF, CSV, Excel, image analysis |
 | **Context Awareness** | `check_context`, `auto_compact` | Monitor context, save state |
 | **Built-in (Agno)** | `PythonTools`, `ShellTools`, `LocalFileSystemTools` | Code execution, shell, file I/O |
+| **Code Testing** | `run_pytest`, `run_code_and_compare_output`, `run_agent_tests` | Automated code validation |
 
 ## Project Structure
 
@@ -283,7 +285,7 @@ Miguel/
 │       ├── architecture.md        # Architecture map
 │       ├── capabilities.json      # Capability checklist
 │       ├── improvements.md        # Improvement log
-│       └── tools/                 # 14 tool modules, 53 functions
+│       └── tools/                 # 15 tool modules, 56 functions
 ```
 
 ## Contributing
