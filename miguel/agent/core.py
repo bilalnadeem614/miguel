@@ -19,6 +19,7 @@ from agno.tools.local_file_system import LocalFileSystemTools
 
 from miguel.agent.config import MODEL_ID, USER_FILES_DIR
 from miguel.agent.prompts import get_system_prompt
+from miguel.core.preferences import get_relevant_preferences
 from miguel.agent.team import (
     create_coder_agent,
     create_researcher_agent,
@@ -171,12 +172,14 @@ def create_agent(interactive: bool = False) -> Agent:
     Used as fallback or for simple batch operations where team overhead
     isn't needed. Returns a standard Agent, not a Team.
     """
+
+    prefs = get_relevant_preferences("main")
     return Agent(
         name="Miguel",
         model=Gemini(
             id=MODEL_ID,
         ),
-        instructions=get_system_prompt(),
+        instructions=get_system_prompt(prefs),
         tools=COORDINATOR_TOOLS,
         markdown=True,
         **(
@@ -213,6 +216,8 @@ def create_team(interactive: bool = False) -> Team:
     main_prefs = load_user_preferences_tool("main")
     python_prefs = load_user_preferences_tool("python")
     js_prefs = load_user_preferences_tool("js")
+    prefs = get_relevant_preferences("main")
+
 
     coder_prefs = f"{main_prefs}\n{python_prefs}\n{js_prefs}"
     general_prefs = main_prefs
@@ -227,7 +232,7 @@ def create_team(interactive: bool = False) -> Team:
             create_researcher_agent(general_prefs),
             create_analyst_agent(general_prefs),
         ],\
-        instructions=get_system_prompt(),
+        instructions=get_system_prompt(prefs),
         tools=COORDINATOR_TOOLS,
         markdown=True,
         share_member_interactions=True,

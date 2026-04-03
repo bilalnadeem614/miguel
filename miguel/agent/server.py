@@ -165,17 +165,27 @@ def reload_agent():
 
 @app.post("/run")
 def run(req: RunRequest):
-    # Use Team for interactive, plain Agent for batch
-    runner = _interactive_team if req.interactive else _agent
-    effective_prompt = _build_preference_augmented_prompt(req.prompt, session_id=req.session_id)
+    # # Use Team for interactive, plain Agent for batch
+    # runner = _interactive_team if req.interactive else _agent
+    # effective_prompt = _build_preference_augmented_prompt(req.prompt, session_id=req.session_id)
 
-    print(f"LLM Input: {effective_prompt}")
+    # print(f"LLM Input: {effective_prompt}")
+
+    # kwargs = dict(stream=True, stream_events=True)
+    # if req.session_id:
+    #     kwargs["session_id"] = req.session_id
+
+    # stream = runner.run(effective_prompt, **kwargs)
+    runner = _interactive_team if req.interactive else _agent
+    
+    # Send the clean prompt. The system prompt is already handling preferences.
+    print(f"LLM Input: {req.prompt}")
 
     kwargs = dict(stream=True, stream_events=True)
     if req.session_id:
         kwargs["session_id"] = req.session_id
 
-    stream = runner.run(effective_prompt, **kwargs)
+    stream = runner.run(req.prompt, **kwargs)
 
     def log_stream(stream):
         for event in stream:

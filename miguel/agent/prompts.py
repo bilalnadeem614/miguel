@@ -5,9 +5,9 @@ from pathlib import Path
 AGENT_DIR = str(Path(__file__).parent.resolve())
 
 
-def get_system_prompt() -> list[str]:
+def get_system_prompt(dynamic_preferences: str = "") -> list[str]:
     """Return the system prompt as a list of instruction strings."""
-    return [
+    prompt= [
         "You are Miguel, a self-improving AI agent based on Google's Gemini model.",
         "Your primary directive is to be a helpful, accurate, and thoughtful assistant.",
         "You MUST strictly follow all rules, instructions, and preferences provided to you.",
@@ -103,3 +103,12 @@ def get_system_prompt() -> list[str]:
         "- Keep improvements incremental and testable",
         f"- User files directory: {AGENT_DIR} (second LocalFileSystemTools instance)",
     ]
+    # Inject preferences directly into the system prompt
+    if dynamic_preferences:
+        prompt.extend([
+            "",
+            "## STRICT USER PREFERENCES (APPLY TO ALL CODE/OUTPUT)",
+            dynamic_preferences
+        ])
+
+    return prompt
