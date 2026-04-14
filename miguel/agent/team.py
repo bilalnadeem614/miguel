@@ -43,7 +43,7 @@ def create_coder_agent(preference_string: str) -> Agent:
         run_agent_tests,
     )
 
-    return Agent(
+    agent = Agent(
         name="Coder",
         role="Code generation, execution, file writing, and debugging specialist",
         description=(
@@ -61,6 +61,7 @@ def create_coder_agent(preference_string: str) -> Agent:
             f"User files directory: {USER_FILES_DIR}",
             "Return your results clearly — the coordinator will relay them to the user.",
             "If you encounter errors, debug them and fix the root cause.",
+            "Here are user perfrences you have must to follow",
             preference_string,
         ],
         tools=[
@@ -76,6 +77,9 @@ def create_coder_agent(preference_string: str) -> Agent:
         ],
         markdown=True,
     )
+    # print ("Coder agent instructions:")
+    # print (agent.instructions)
+    return agent
 
 
 def create_researcher_agent(preference_string: str) -> Agent:
@@ -105,6 +109,7 @@ def create_researcher_agent(preference_string: str) -> Agent:
             "Always cite sources. Synthesize information clearly.",
             "Return organized, well-structured findings to the coordinator.",
             "If first search doesn't work, rephrase and try again.",
+            "Here are user perfrences you have must to follow",
             preference_string,
         ],
         tools=[
@@ -148,6 +153,7 @@ def create_analyst_agent(preference_string: str) -> Agent:
             "Present findings with clear tables, statistics, and insights.",
             "Return well-formatted analysis results to the coordinator.",
             f"User files directory: {USER_FILES_DIR}",
+            "Here are user perfrences you have must to follow",
             preference_string,
         ],
         tools=[

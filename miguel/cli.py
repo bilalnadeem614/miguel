@@ -3,9 +3,10 @@
 import json
 import uuid
 
-from dotenv import load_dotenv
+# import os
+# from dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv(".env")
 
 import typer
 from rich.console import Console

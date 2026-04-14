@@ -126,6 +126,7 @@ def get_system_prompt(dynamic_preferences: str = "") -> list[str]:
             "<user_preferences>",
             "CRITICAL: You MUST apply these formatting, naming conventions, and logic rules to ALL generated code, text, and output.",
             "These rules override any default programming language conventions (e.g., if preferences specify camelCase for Python, you MUST use camelCase).",
+            "If code_saving is True, then always save the generated code in a code file, if code_saving is False then never save the generated code and if the code_saving is 'only_on_explicit_request' then detect from the user prompt if it is mentioned to save the code, otherwise don't save it. Also pass these instructions to the sub-agent",
             dynamic_preferences,
             "</user_preferences>"
         ])

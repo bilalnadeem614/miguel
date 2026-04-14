@@ -16,6 +16,10 @@ from pathlib import Path
 
 from agno.db.sqlite import SqliteDb
 from agno.tools.local_file_system import LocalFileSystemTools
+import os
+from dotenv import load_dotenv
+
+load_dotenv(".env")
 
 from miguel.agent.config import MODEL_ID, USER_FILES_DIR
 from miguel.agent.prompts import get_system_prompt
@@ -178,7 +182,10 @@ def create_agent(interactive: bool = False) -> Agent:
         name="Miguel",
         model=Gemini(
             id=MODEL_ID,
+            api_key=os.getenv('GEMINI_API_KEY')
+            # debug_mode=True
         ),
+        debug_mode=True,
         instructions=get_system_prompt(prefs),
         tools=COORDINATOR_TOOLS,
         markdown=True,
@@ -194,9 +201,18 @@ def create_agent(interactive: bool = False) -> Agent:
     )
 
 
-def create_team(interactive: bool = False) -> Team:
-    """Create and return Miguel as an Agno Team with sub-agent delegation.
+def _infer_domain_from_prompt(prompt: str) -> str:
+    """Infer the most likely preference domain from the user's prompt."""
+    prompt_lower = prompt.lower()
+    if any(keyword in prompt_lower for keyword in ["python", "py", "pip", "pandas", "numpy"]):
+        return "python"
+    if any(keyword in prompt_lower for keyword in ["javascript", "js", "node", "react", "vue"]):
+        return "js"
+    # Add more domain inferences here as needed
+    return "main"
 
+def create_team(interactive: bool = False, user_prompt: str = "") -> Team:
+    """Create and return Miguel as an Agno Team with sub-agent delegation.
     The Team uses 'coordinate' mode:
     - Miguel (coordinator) receives user messages and decides how to respond
     - For simple tasks, Miguel uses its own tools directly
@@ -204,29 +220,38 @@ def create_team(interactive: bool = False) -> Team:
       * Coder: code generation, execution, file writing, debugging
       * Researcher: web search, API calls, information gathering
       * Analyst: data analysis, CSV/PDF/image processing, statistics
-
     Sub-agents get fresh context windows, preventing context exhaustion
     on complex multi-step tasks. The coordinator will load preferences
     and pass them to the sub-agents.
-
     Args:
         interactive: If True, enable conversation history for chat sessions.
                      If False (default), no history — used for improvement batches.
+        user_prompt: The user's input, used to infer the preference domain.
     """
+    inferred_domain = _infer_domain_from_prompt(user_prompt)
+
     main_prefs = load_user_preferences_tool("main")
-    python_prefs = load_user_preferences_tool("python")
-    js_prefs = load_user_preferences_tool("js")
-    prefs = get_relevant_preferences("main")
+    domain_prefs = load_user_preferences_tool(inferred_domain) if inferred_domain != "main" else ""
+    
+    # Combine main and domain-specific preferences, avoiding duplicates
+    prefs = f"{main_prefs}\n{domain_prefs}"
 
-
-    coder_prefs = f"{main_prefs}\n{python_prefs}\n{js_prefs}"
+    # Pass the combined preferences to the appropriate sub-agents
+    coder_prefs = prefs
     general_prefs = main_prefs
 
-    return Team(
+    # logger.info("Preferences loaded for domain=%s", inferred_domain)
+    # print(f"Preferences loaded for domain general={inferred_domain}")
+    # print(f"Preferences loaded for domain coder={coder_prefs}")
+
+
+    team = Team(
         name="Miguel",
         model=Gemini(
             id=MODEL_ID,
+            api_key=os.getenv('GEMINI_API_KEY')
         ),
+        debug_mode=True,
         members=[
             create_coder_agent(coder_prefs),
             create_researcher_agent(general_prefs),
@@ -250,3 +275,11 @@ def create_team(interactive: bool = False) -> Team:
             else {}\
         ),\
     )
+    # print(team.instructions)
+    # print(team.agents[0].instructions) if team.agents[0] else print("No agent 0")
+    # print ("*******************************************")
+    # print(team.agents[1].instructions) if team.agents[1] else print("No agent 1")
+    # ("*******************************************")
+    # print(team.agents[2].instructions) if team.agents[2] else print("No agent 2")
+
+    return team
